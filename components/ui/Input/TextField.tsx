@@ -1,0 +1,54 @@
+import { HiOutlineUser } from "react-icons/hi2";
+
+interface Props {
+  id: string;
+  name: string;
+  label: string;
+  placeholder?: string;
+  value: string;
+  autoComplete?: string;
+  autoFocus?: boolean;
+  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+function TextField({
+  id,
+  name,
+  label,
+  placeholder,
+  value,
+  autoComplete,
+  autoFocus,
+  onChange,
+}: Props) {
+  return (
+    <div>
+      <label
+        htmlFor={id}
+        className="block text-[10px] font-black uppercase tracking-wider text-[#232852] sm:text-xs"
+      >
+        {label}
+      </label>
+      <div className="relative mt-1.5 sm:mt-2">
+        <input
+          id={id}
+          name={name}
+          type="text"
+          value={value}
+          placeholder={placeholder}
+          autoComplete={autoComplete}
+          autoFocus={autoFocus}
+          onChange={onChange}
+          required
+          className="w-full rounded-xl border-2 border-slate-200 bg-white py-3 pl-3.5 pr-11 text-sm font-semibold text-[#232852] outline-none transition-all placeholder:text-slate-400 focus:border-[#3A72E3] focus:ring-4 focus:ring-[#3A72E3]/20 sm:rounded-2xl sm:py-4 sm:pl-4 sm:pr-12"
+        />
+        <HiOutlineUser
+          className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-300 sm:right-4 sm:h-5 sm:w-5"
+          aria-hidden="true"
+        />
+      </div>
+    </div>
+  );
+}
+
+export default TextField;
