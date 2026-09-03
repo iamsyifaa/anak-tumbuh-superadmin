@@ -10,7 +10,7 @@ import PasswordField from "@/components/ui/Input/PasswordField";
 import ErrorAlert from "@/components/ui/Alert/ErrorAlert";
 
 // Satu-satunya metode login di app ini (username + password, sesuai
-// requirement doc bagian 96) — tidak ada opsi QR seperti di app Siswa.
+// requirement doc bagian 8) — tidak ada opsi QR seperti di app Siswa.
 function SuperAdminLoginForm() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -73,7 +73,7 @@ function SuperAdminLoginForm() {
         <button
           type="submit"
           disabled={loading || !username.trim() || !password}
-          className="w-full rounded-xl border-b-4 border-[#232852] bg-[#3A72E3] py-2.5 text-[11px] font-black text-white shadow-lg shadow-[#3A72E3]/40 transition-all hover:scale-[1.02] hover:bg-[#3268D5] active:scale-95 active:translate-y-1 active:border-b-0 active:shadow-md disabled:cursor-not-allowed disabled:hover:scale-100 sm:rounded-2xl sm:py-4 sm:text-base"
+          className="w-full rounded-xl border-b-4 border-[#203A5B] bg-[#203A5B] py-2.5 text-[11px] font-black text-white shadow-lg shadow-[#203A5B]/40 transition-all hover:scale-[1.02] hover:bg-[#162d47] active:scale-95 active:translate-y-1 active:border-b-0 active:shadow-md disabled:cursor-not-allowed disabled:hover:scale-100 sm:rounded-2xl sm:py-4 sm:text-base"
         >
           {loading ? "Memverifikasi..." : "Masuk"}
         </button>

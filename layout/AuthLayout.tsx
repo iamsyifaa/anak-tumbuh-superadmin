@@ -9,7 +9,7 @@ interface Props {
 // re-declaring the same gradient background + centering).
 function AuthLayout({ children }: Props) {
   return (
-    <div className="relative flex min-h-[100svh] w-full items-center justify-center overflow-hidden bg-gradient-to-br from-[#A4C1FD] via-white to-[#EEF5FF] px-2.5 py-6 sm:px-6 sm:py-24">
+    <div className="relative flex min-h-[100svh] w-full items-center justify-center overflow-hidden bg-gradient-to-br from-[#D7EFFF] via-white to-[#D7EFFF] px-2.5 py-6 sm:px-6 sm:py-24">
       <AuthBackdrop />
       {children}
     </div>
