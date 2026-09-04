@@ -1,6 +1,5 @@
 import { Account } from "@/lib/types/accountType";
 import { AuthApiResponse, AuthenticatedUser } from "@/lib/types/authType";
-import { ImportResult } from "@/lib/types/importType";
 import { PlatformSummary, SchoolRecapRow } from "@/lib/types/reportType";
 import { School } from "@/lib/types/schoolType";
 
@@ -187,24 +186,6 @@ export async function mockUpdateAccount(id: string) {
     code: 200,
     message: "Akun berhasil diperbarui (mode dummy).",
     data: account,
-  };
-}
-
-export async function mockImportData(): Promise<{
-  code: number;
-  message: string;
-  data: ImportResult;
-}> {
-  await delay(800);
-  return {
-    code: 200,
-    message: "Import selesai (mode dummy).",
-    data: {
-      totalRows: 10,
-      validRows: 9,
-      invalidRows: 1,
-      errors: [{ row: 7, message: "NISN duplikat (contoh error dummy)" }],
-    },
   };
 }
 

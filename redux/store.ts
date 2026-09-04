@@ -2,7 +2,6 @@ import { configureStore } from "@reduxjs/toolkit";
 import authSlice from "./features/auth/authSlice";
 import schoolSlice from "./features/school/schoolSlice";
 import accountSlice from "./features/account/accountSlice";
-import importSlice from "./features/import/importSlice";
 import reportSlice from "./features/report/reportSlice";
 
 const store = configureStore({
@@ -10,7 +9,6 @@ const store = configureStore({
     auth: authSlice,
     school: schoolSlice,
     account: accountSlice,
-    import: importSlice,
     report: reportSlice,
   },
 });

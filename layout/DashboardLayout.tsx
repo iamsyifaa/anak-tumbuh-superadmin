@@ -23,6 +23,7 @@ function DashboardLayout({ children, pageName }: Props) {
   const router = useRouter();
   const { user, accessToken } = useSelector((state: RootState) => state.auth);
   const [openLogout, setOpenLogout] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!accessToken || !user || !isSuperAdmin(user.role)) {
@@ -36,10 +37,14 @@ function DashboardLayout({ children, pageName }: Props) {
 
   return (
     <>
-      <MainNavbar pageName={pageName} />
-      <MainSidebar onClickLogout={() => setOpenLogout(true)} />
+      <MainNavbar pageName={pageName} onOpenSidebar={() => setSidebarOpen(true)} />
+      <MainSidebar
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        onClickLogout={() => setOpenLogout(true)}
+      />
       <MainBreadcrumb pageName={pageName} />
-      <div className="lg:pl-60">
+      <div className="lg:pl-64">
         <div className="px-4 pb-10 pt-4 md:px-8 lg:px-10">{children}</div>
       </div>
       {openLogout && <LogoutModal onClose={() => setOpenLogout(false)} />}
