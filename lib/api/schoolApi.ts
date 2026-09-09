@@ -33,7 +33,7 @@ export const storeSchoolApi = async (formData: FormData, token: string) => {
     headers: authHeaders(token),
     body: formData,
   });
-  return response.json();
+  return parseSchoolResponse(response);
 };
 
 export const updateSchoolApi = async (id: string, formData: FormData, token: string) => {
@@ -48,5 +48,23 @@ export const updateSchoolApi = async (id: string, formData: FormData, token: str
     headers: authHeaders(token),
     body: formData,
   });
-  return response.json();
+  return parseSchoolResponse(response);
+};
+
+// Backend kadang balikin body non-JSON kalau error (mis. 404/500 dari
+// proxy, atau apiBaseUrl belum di-set jadi nyasar ke halaman Next.js
+// sendiri). Tanpa ini, response.json() bakal throw error parsing yang
+// bikin bingung ("Unexpected token '<'...") dan gagal simpan jadi
+// kelihatan seperti tidak terjadi apa-apa.
+const parseSchoolResponse = async (response: Response) => {
+  const raw = await response.text();
+  try {
+    return JSON.parse(raw);
+  } catch {
+    throw new Error(
+      response.ok
+        ? "Server memberi respons yang tidak valid."
+        : `Gagal menghubungi server (status ${response.status}). Pastikan NEXT_PUBLIC_API_BASE_URL sudah benar.`
+    );
+  }
 };

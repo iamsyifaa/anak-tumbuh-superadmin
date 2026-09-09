@@ -3,12 +3,13 @@
 import { SyntheticEvent, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
-import { storeSchool } from "@/redux/features/school/schoolSlice";
+import { clearSchoolMessage, storeSchool } from "@/redux/features/school/schoolSlice";
 import { getAccountList } from "@/redux/features/account/accountSlice";
 import { EducationLevel } from "@/lib/types/schoolType";
 import TextInput from "@/components/ui/Input/TextInput";
 import MainSelect from "@/components/ui/Select/MainSelect";
 import PrimaryButton from "@/components/ui/Button/PrimaryButton";
+import ErrorAlert from "@/components/ui/Alert/ErrorAlert";
 
 interface Props {
   onSuccess: () => void;
@@ -17,12 +18,22 @@ interface Props {
 // Requirement doc bagian 2: cuma Super Admin yang bisa bikin sekolah baru.
 function CreateSchoolForm({ onSuccess }: Props) {
   const dispatch = useDispatch<AppDispatch>();
-  const { loading } = useSelector((state: RootState) => state.school);
+  const { loading, code, message, error } = useSelector((state: RootState) => state.school);
   const { accounts } = useSelector((state: RootState) => state.account);
   const [name, setName] = useState("");
   const [level, setLevel] = useState<EducationLevel>("SD");
   const [address, setAddress] = useState("");
   const [headmasterAccountId, setHeadmasterAccountId] = useState("");
+
+  // Kalau ada pesan error yang ketinggalan dari percobaan simpan
+  // sebelumnya, bersihkan begitu form ini dibuka.
+  useEffect(() => {
+    dispatch(clearSchoolMessage());
+  }, [dispatch]);
+
+  // Ditampilkan kalau request gagal total (network/exception) ATAU kalau
+  // backend menolak datanya (fulfilled tapi code bukan 201, mis. validasi).
+  const errorMessage = error || (message && code !== 201 ? message : null);
 
   useEffect(() => {
     dispatch(getAccountList({ search: "", page: 1, limit: 100 }));
@@ -37,6 +48,7 @@ function CreateSchoolForm({ onSuccess }: Props) {
 
   const handleSubmit = async (event: SyntheticEvent) => {
     event.preventDefault();
+    dispatch(clearSchoolMessage());
     const formData = new FormData();
     formData.append("name", name);
     formData.append("level", level);
@@ -53,6 +65,9 @@ function CreateSchoolForm({ onSuccess }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {errorMessage && (
+        <ErrorAlert message={errorMessage} onClose={() => dispatch(clearSchoolMessage())} />
+      )}
       <TextInput
         id="school-name"
         name="name"

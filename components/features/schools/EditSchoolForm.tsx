@@ -3,12 +3,13 @@
 import { SyntheticEvent, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
-import { updateSchool } from "@/redux/features/school/schoolSlice";
+import { clearSchoolMessage, updateSchool } from "@/redux/features/school/schoolSlice";
 import { getAccountList } from "@/redux/features/account/accountSlice";
 import { EducationLevel, School } from "@/lib/types/schoolType";
 import TextInput from "@/components/ui/Input/TextInput";
 import MainSelect from "@/components/ui/Select/MainSelect";
 import PrimaryButton from "@/components/ui/Button/PrimaryButton";
+import ErrorAlert from "@/components/ui/Alert/ErrorAlert";
 
 interface Props {
   school: School;
@@ -17,7 +18,7 @@ interface Props {
 
 function EditSchoolForm({ school, onSuccess }: Props) {
   const dispatch = useDispatch<AppDispatch>();
-  const { loading } = useSelector((state: RootState) => state.school);
+  const { loading, code, message, error } = useSelector((state: RootState) => state.school);
   const { accounts } = useSelector((state: RootState) => state.account);
   const [name, setName] = useState(school.name);
   const [level, setLevel] = useState<EducationLevel>(school.level);
@@ -28,7 +29,12 @@ function EditSchoolForm({ school, onSuccess }: Props) {
 
   useEffect(() => {
     dispatch(getAccountList({ search: "", page: 1, limit: 100 }));
+    dispatch(clearSchoolMessage());
   }, [dispatch]);
+
+  // Ditampilkan kalau request gagal total (network/exception) ATAU kalau
+  // backend menolak datanya (fulfilled tapi code bukan 200, mis. validasi).
+  const errorMessage = error || (message && code !== 200 ? message : null);
 
   // Yang boleh dipilih: akun yang belum ditugaskan ke sekolah manapun,
   // ditambah akun kepsek yang sudah menjabat di sekolah ini (biar tetap
@@ -43,6 +49,7 @@ function EditSchoolForm({ school, onSuccess }: Props) {
 
   const handleSubmit = async (event: SyntheticEvent) => {
     event.preventDefault();
+    dispatch(clearSchoolMessage());
     const formData = new FormData();
     formData.append("name", name);
     formData.append("level", level);
@@ -50,11 +57,14 @@ function EditSchoolForm({ school, onSuccess }: Props) {
     formData.append("headmaster_account_id", headmasterAccountId);
 
     const result = await dispatch(updateSchool({ id: school.id, formData }));
-    if (updateSchool.fulfilled.match(result)) onSuccess();
+    if (updateSchool.fulfilled.match(result) && result.payload.code === 200) onSuccess();
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {errorMessage && (
+        <ErrorAlert message={errorMessage} onClose={() => dispatch(clearSchoolMessage())} />
+      )}
       <TextInput id="edit-school-name" name="name" label="Nama Sekolah" value={name} onChange={(e) => setName(e.target.value)} />
       <MainSelect
         id="edit-school-level"
