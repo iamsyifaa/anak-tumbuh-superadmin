@@ -79,7 +79,7 @@ export async function mockGetSchoolList(search: string) {
   await delay();
   const data = MOCK_SCHOOLS.filter((s) =>
     s.name.toLowerCase().includes(search.toLowerCase()),
-  );
+  ).map((s) => ({ ...s }));
   return {
     code: 200,
     message: "OK (mode dummy)",
@@ -119,7 +119,11 @@ export async function mockStoreSchool(
   return {
     code: 201,
     message: "Sekolah berhasil ditambahkan (mode dummy).",
-    data: newSchool,
+    // Kirim salinan, bukan referensi ke MOCK_SCHOOLS asli — Redux/Immer
+    // akan membekukan (freeze) object yang dikirim ke store, dan kalau
+    // yang dibekukan adalah object aslinya, penugasan kepsek berikutnya
+    // ("account.schoolId = ...") bakal error "read only property".
+    data: { ...newSchool },
   };
 }
 
@@ -152,7 +156,8 @@ export async function mockUpdateSchool(id: string, headmasterAccountId?: string)
   return {
     code: 200,
     message: "Sekolah berhasil diperbarui (mode dummy).",
-    data: school,
+    // Salinan juga di sini, dengan alasan yang sama seperti mockStoreSchool.
+    data: { ...school },
   };
 }
 
@@ -188,7 +193,7 @@ export async function mockGetAccountList(search: string) {
   await delay();
   const data = MOCK_ACCOUNTS.filter((a) =>
     a.name.toLowerCase().includes(search.toLowerCase()),
-  );
+  ).map((a) => ({ ...a }));
   return {
     code: 200,
     message: "OK (mode dummy)",
@@ -217,7 +222,7 @@ export async function mockStoreAccount(
   return {
     code: 201,
     message: "Akun berhasil ditambahkan (mode dummy).",
-    data: newAccount,
+    data: { ...newAccount },
   };
 }
 
@@ -227,7 +232,7 @@ export async function mockUpdateAccount(id: string) {
   return {
     code: 200,
     message: "Akun berhasil diperbarui (mode dummy).",
-    data: account,
+    data: { ...account },
   };
 }
 
