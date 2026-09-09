@@ -24,7 +24,6 @@ export const storeAccountApi = async (formData: FormData, token: string) => {
       String(formData.get("username")),
       String(formData.get("email")),
       formData.get("role") as AccountRole,
-      String(formData.get("school_id"))
     );
   }
 

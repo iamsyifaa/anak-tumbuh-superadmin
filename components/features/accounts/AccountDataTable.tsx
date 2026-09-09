@@ -39,7 +39,11 @@ function AccountDataTable() {
       name: "Peran",
       cell: () => <StatusBadge label="Kepala Sekolah" tone="headmaster" />,
     },
-    { name: "Sekolah", selector: (row: Account) => row.schoolName },
+    {
+      name: "Sekolah",
+      cell: (row: Account) =>
+        row.schoolName ?? <span className="italic text-slate-400">Belum ditugaskan</span>,
+    },
     {
       name: "Aksi",
       cell: (row: Account) => (

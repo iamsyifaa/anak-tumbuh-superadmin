@@ -92,6 +92,7 @@ export async function mockStoreSchool(
   name: string,
   level: "SD" | "TK",
   address: string,
+  headmasterAccountId?: string,
 ) {
   await delay();
   const newSchool: School = {
@@ -103,6 +104,17 @@ export async function mockStoreSchool(
     totalStudents: 0,
     createdAt: new Date().toISOString(),
   };
+
+  if (headmasterAccountId) {
+    const account = MOCK_ACCOUNTS.find((a) => a.id === headmasterAccountId);
+    if (account) {
+      account.schoolId = newSchool.id;
+      account.schoolName = newSchool.name;
+      newSchool.headmasterAccountId = account.id;
+      newSchool.headmasterName = account.name;
+    }
+  }
+
   MOCK_SCHOOLS.unshift(newSchool);
   return {
     code: 201,
@@ -111,9 +123,32 @@ export async function mockStoreSchool(
   };
 }
 
-export async function mockUpdateSchool(id: string) {
+export async function mockUpdateSchool(id: string, headmasterAccountId?: string) {
   await delay();
   const school = MOCK_SCHOOLS.find((s) => s.id === id) ?? MOCK_SCHOOLS[0];
+
+  // Lepas kepsek lama kalau beda dari yang baru dipilih.
+  if (school.headmasterAccountId && school.headmasterAccountId !== headmasterAccountId) {
+    const previous = MOCK_ACCOUNTS.find((a) => a.id === school.headmasterAccountId);
+    if (previous) {
+      previous.schoolId = undefined;
+      previous.schoolName = undefined;
+    }
+  }
+
+  if (headmasterAccountId) {
+    const account = MOCK_ACCOUNTS.find((a) => a.id === headmasterAccountId);
+    if (account) {
+      account.schoolId = school.id;
+      account.schoolName = school.name;
+      school.headmasterAccountId = account.id;
+      school.headmasterName = account.name;
+    }
+  } else {
+    school.headmasterAccountId = undefined;
+    school.headmasterName = undefined;
+  }
+
   return {
     code: 200,
     message: "Sekolah berhasil diperbarui (mode dummy).",
@@ -138,6 +173,15 @@ const MOCK_ACCOUNTS: Account[] = [
     schoolId: "s2",
     schoolName: "TK Ceria Bahagia",
   },
+  {
+    id: "a3",
+    name: "Dewi Lestari",
+    username: "dewi.headmaster",
+    role: "headmaster",
+    // Belum ditugaskan ke sekolah manapun — contoh buat testing select di form sekolah.
+    schoolId: undefined,
+    schoolName: undefined,
+  },
 ];
 
 export async function mockGetAccountList(search: string) {
@@ -158,18 +202,16 @@ export async function mockStoreAccount(
   username: string,
   email: string,
   role: "headmaster",
-  schoolId: string,
 ) {
   await delay();
-  const school = MOCK_SCHOOLS.find((s) => s.id === schoolId);
   const newAccount: Account = {
     id: `a${Date.now()}`,
     name,
     username,
     email,
     role,
-    schoolId,
-    schoolName: school?.name ?? "-",
+    schoolId: undefined,
+    schoolName: undefined,
   };
   MOCK_ACCOUNTS.unshift(newAccount);
   return {

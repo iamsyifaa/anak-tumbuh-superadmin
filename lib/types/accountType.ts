@@ -9,8 +9,10 @@ export interface Account {
   username: string;
   email?: string;
   role: AccountRole;
-  schoolId: string;
-  schoolName: string;
+  // Akun Kepsek bisa dibuat dulu tanpa sekolah ("belum ditugaskan"),
+  // baru ditugaskan ke sekolah lewat form Tambah/Edit Sekolah.
+  schoolId?: string;
+  schoolName?: string;
 }
 
 export interface CreateAccountInput {
@@ -18,7 +20,6 @@ export interface CreateAccountInput {
   username: string;
   email?: string;
   role: AccountRole;
-  schoolId: string;
 }
 
 export type UpdateAccountInput = Partial<CreateAccountInput>;

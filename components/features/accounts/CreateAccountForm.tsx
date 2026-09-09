@@ -1,10 +1,9 @@
 "use client";
 
-import { SyntheticEvent, useEffect, useState } from "react";
+import { SyntheticEvent, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
 import { storeAccount } from "@/redux/features/account/accountSlice";
-import { getSchoolList } from "@/redux/features/school/schoolSlice";
 import { AccountRole } from "@/lib/types/accountType";
 import TextInput from "@/components/ui/Input/TextInput";
 import MainSelect from "@/components/ui/Select/MainSelect";
@@ -14,22 +13,16 @@ interface Props {
   onSuccess: () => void;
 }
 
-// Super Admin hanya mengelola satu akun Kepala Sekolah untuk setiap sekolah.
+// Akun Kepala Sekolah dibuat dulu di sini tanpa terikat sekolah ("belum
+// ditugaskan"). Penugasan ke sekolah dilakukan lewat form Tambah/Edit
+// Sekolah di halaman Akun Sekolah.
 function CreateAccountForm({ onSuccess }: Props) {
   const dispatch = useDispatch<AppDispatch>();
   const { loading } = useSelector((state: RootState) => state.account);
-  const { schools } = useSelector((state: RootState) => state.school);
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<AccountRole>("headmaster");
-  const [schoolId, setSchoolId] = useState("");
-
-  useEffect(() => {
-    if (schools.length === 0) {
-      dispatch(getSchoolList({ search: "", page: 1, limit: 100 }));
-    }
-  }, [dispatch, schools.length]);
 
   const handleSubmit = async (event: SyntheticEvent) => {
     event.preventDefault();
@@ -38,7 +31,6 @@ function CreateAccountForm({ onSuccess }: Props) {
     formData.append("username", username);
     formData.append("email", email);
     formData.append("role", role);
-    formData.append("school_id", schoolId);
 
     const result = await dispatch(storeAccount(formData));
     if (storeAccount.fulfilled.match(result) && result.payload.code === 201) {
@@ -55,17 +47,6 @@ function CreateAccountForm({ onSuccess }: Props) {
         value={role}
         onChange={(e) => setRole(e.target.value as AccountRole)}
         options={[{ label: "Kepala Sekolah", value: "headmaster" }]}
-      />
-      <MainSelect
-        id="account-school"
-        name="school_id"
-        label="Sekolah"
-        value={schoolId}
-        onChange={(e) => setSchoolId(e.target.value)}
-        options={[
-          { label: "Pilih sekolah", value: "" },
-          ...schools.map((s) => ({ label: s.name, value: s.id })),
-        ]}
       />
       <TextInput
         id="account-name"

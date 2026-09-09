@@ -19,10 +19,12 @@ export const getSchoolListApi = async (token: string, search: string, page: numb
 
 export const storeSchoolApi = async (formData: FormData, token: string) => {
   if (envConfig.useMockApi) {
+    const headmasterAccountId = formData.get("headmaster_account_id");
     return mockStoreSchool(
       String(formData.get("name")),
       formData.get("level") as EducationLevel,
-      String(formData.get("address"))
+      String(formData.get("address")),
+      headmasterAccountId ? String(headmasterAccountId) : undefined
     );
   }
 
@@ -35,7 +37,10 @@ export const storeSchoolApi = async (formData: FormData, token: string) => {
 };
 
 export const updateSchoolApi = async (id: string, formData: FormData, token: string) => {
-  if (envConfig.useMockApi) return mockUpdateSchool(id);
+  if (envConfig.useMockApi) {
+    const headmasterAccountId = formData.get("headmaster_account_id");
+    return mockUpdateSchool(id, headmasterAccountId ? String(headmasterAccountId) : undefined);
+  }
 
   formData.append("_method", "PUT");
   const response = await fetch(`${envConfig.apiBaseUrl}/v1/schools/${id}`, {
