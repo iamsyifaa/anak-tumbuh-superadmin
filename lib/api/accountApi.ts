@@ -36,7 +36,9 @@ export const storeAccountApi = async (formData: FormData, token: string) => {
 };
 
 export const updateAccountApi = async (id: string, formData: FormData, token: string) => {
-  if (envConfig.useMockApi) return mockUpdateAccount(id);
+  if (envConfig.useMockApi) {
+    return mockUpdateAccount(id, String(formData.get("name")), String(formData.get("email")));
+  }
 
   formData.append("_method", "PUT");
   const response = await fetch(`${envConfig.apiBaseUrl}/v1/accounts/${id}`, {

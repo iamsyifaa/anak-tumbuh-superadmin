@@ -226,9 +226,11 @@ export async function mockStoreAccount(
   };
 }
 
-export async function mockUpdateAccount(id: string) {
+export async function mockUpdateAccount(id: string, name: string, email: string) {
   await delay();
   const account = MOCK_ACCOUNTS.find((a) => a.id === id) ?? MOCK_ACCOUNTS[0];
+  account.name = name;
+  account.email = email;
   return {
     code: 200,
     message: "Akun berhasil diperbarui (mode dummy).",
@@ -238,7 +240,7 @@ export async function mockUpdateAccount(id: string) {
 
 const MOCK_SUMMARY: PlatformSummary = {
   totalSchools: MOCK_SCHOOLS.length,
-  totalHeadmasters: 2,
+  totalHeadmasters: MOCK_ACCOUNTS.length,
   totalTeachers: 0,
   totalStudents: 690,
 };
