@@ -1,10 +1,11 @@
 "use client";
 
-import { SyntheticEvent, useState } from "react";
+import { SyntheticEvent, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
 import { storeAccount } from "@/redux/features/account/accountSlice";
 import { AccountRole } from "@/lib/types/accountType";
+import { generateUsername } from "@/lib/utils/generateUsername";
 import TextInput from "@/components/ui/Input/TextInput";
 import MainSelect from "@/components/ui/Select/MainSelect";
 import PrimaryButton from "@/components/ui/Button/PrimaryButton";
@@ -16,20 +17,25 @@ interface Props {
 // Akun Kepala Sekolah dibuat dulu di sini tanpa terikat sekolah ("belum
 // ditugaskan"). Penugasan ke sekolah dilakukan lewat form Tambah/Edit
 // Sekolah di halaman Akun Sekolah.
+//
+// Username nggak diketik manual — digenerate otomatis dari Nama Lengkap
+// (lihat lib/utils/generateUsername.ts). Password wajib diisi pakai NIP,
+// biar kepsek bisa login pakai username hasil generate + NIP-nya sendiri.
 function CreateAccountForm({ onSuccess }: Props) {
   const dispatch = useDispatch<AppDispatch>();
   const { loading } = useSelector((state: RootState) => state.account);
   const [name, setName] = useState("");
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [role, setRole] = useState<AccountRole>("headmaster");
+
+  const username = useMemo(() => generateUsername(name), [name]);
 
   const handleSubmit = async (event: SyntheticEvent) => {
     event.preventDefault();
     const formData = new FormData();
     formData.append("name", name);
     formData.append("username", username);
-    formData.append("email", email);
+    formData.append("password", password);
     formData.append("role", role);
 
     const result = await dispatch(storeAccount(formData));
@@ -56,20 +62,12 @@ function CreateAccountForm({ onSuccess }: Props) {
         onChange={(e) => setName(e.target.value)}
       />
       <TextInput
-        id="account-username"
-        name="username"
-        label="Username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
-      <TextInput
-        id="account-email"
-        name="email"
-        label="Email (opsional)"
-        type="email"
-        required={false}
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
+        id="account-password"
+        name="password"
+        label="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        hint="Gunakan NIP kepala sekolah sebagai password. Wajib diisi."
       />
       <PrimaryButton type="submit" loading={loading} label="Simpan Akun" />
     </form>

@@ -22,7 +22,7 @@ export const storeAccountApi = async (formData: FormData, token: string) => {
     return mockStoreAccount(
       String(formData.get("name")),
       String(formData.get("username")),
-      String(formData.get("email")),
+      String(formData.get("password")),
       formData.get("role") as AccountRole,
     );
   }
@@ -37,7 +37,7 @@ export const storeAccountApi = async (formData: FormData, token: string) => {
 
 export const updateAccountApi = async (id: string, formData: FormData, token: string) => {
   if (envConfig.useMockApi) {
-    return mockUpdateAccount(id, String(formData.get("name")), String(formData.get("email")));
+    return mockUpdateAccount(id, String(formData.get("name")), String(formData.get("password")));
   }
 
   formData.append("_method", "PUT");

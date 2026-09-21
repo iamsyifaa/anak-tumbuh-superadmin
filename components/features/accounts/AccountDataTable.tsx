@@ -8,7 +8,6 @@ import { getAccountList } from "@/redux/features/account/accountSlice";
 import { Account } from "@/lib/types/accountType";
 import { useDebounce } from "@/hook/useDebounce";
 import MainCard from "@/components/ui/Card/MainCard";
-import StatusBadge from "@/components/ui/Badge/StatusBadge";
 import CreateModal from "@/components/ui/Modal/CreateModal";
 import EditModal from "@/components/ui/Modal/EditModal";
 import SuccessModal from "@/components/ui/Modal/SuccessModal";
@@ -36,8 +35,9 @@ function AccountDataTable() {
     { name: "Nama", selector: (row: Account) => row.name, sortable: true },
     { name: "Username", selector: (row: Account) => row.username },
     {
-      name: "Peran",
-      cell: () => <StatusBadge label="Kepala Sekolah" tone="headmaster" />,
+      name: "Password",
+      cell: (row: Account) =>
+        row.password ?? <span className="italic text-slate-400">-</span>,
     },
     {
       name: "Sekolah",
