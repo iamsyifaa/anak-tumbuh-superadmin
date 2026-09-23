@@ -1,6 +1,11 @@
 import { envConfig } from "@/lib/config/envConfig";
 import { AccountRole } from "@/lib/types/accountType";
-import { mockGetAccountList, mockStoreAccount, mockUpdateAccount } from "./mockData";
+import {
+  mockGetAccountList,
+  mockStoreAccount,
+  mockUpdateAccount,
+  mockDeleteAccount,
+} from "./mockData";
 
 const authHeaders = (token: string) => ({
   Accept: "application/json",
@@ -22,7 +27,7 @@ export const storeAccountApi = async (formData: FormData, token: string) => {
     return mockStoreAccount(
       String(formData.get("name")),
       String(formData.get("username")),
-      String(formData.get("password")),
+      String(formData.get("nip")),
       formData.get("role") as AccountRole,
     );
   }
@@ -37,7 +42,7 @@ export const storeAccountApi = async (formData: FormData, token: string) => {
 
 export const updateAccountApi = async (id: string, formData: FormData, token: string) => {
   if (envConfig.useMockApi) {
-    return mockUpdateAccount(id, String(formData.get("name")), String(formData.get("password")));
+    return mockUpdateAccount(id, String(formData.get("name")), String(formData.get("nip")));
   }
 
   formData.append("_method", "PUT");
@@ -45,6 +50,16 @@ export const updateAccountApi = async (id: string, formData: FormData, token: st
     method: "POST",
     headers: authHeaders(token),
     body: formData,
+  });
+  return response.json();
+};
+
+export const deleteAccountApi = async (id: string, token: string) => {
+  if (envConfig.useMockApi) return mockDeleteAccount(id);
+
+  const response = await fetch(`${envConfig.apiBaseUrl}/v1/accounts/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
   });
   return response.json();
 };

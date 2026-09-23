@@ -1,7 +1,12 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "@/redux/store";
 import { Account } from "@/lib/types/accountType";
-import { getAccountListApi, storeAccountApi, updateAccountApi } from "@/lib/api/accountApi";
+import {
+  getAccountListApi,
+  storeAccountApi,
+  updateAccountApi,
+  deleteAccountApi,
+} from "@/lib/api/accountApi";
 
 interface AccountState {
   accounts: Account[];
@@ -46,6 +51,16 @@ export const updateAccount = createAsyncThunk<
 >("account/updateAccount", async ({ id, formData }, { getState }) => {
   const { accessToken } = getState().auth;
   return updateAccountApi(id, formData, accessToken);
+});
+
+export const deleteAccount = createAsyncThunk<
+  { code: number; message: string; id: string },
+  string,
+  { state: RootState }
+>("account/deleteAccount", async (id, { getState }) => {
+  const { accessToken } = getState().auth;
+  const response = await deleteAccountApi(id, accessToken);
+  return { ...response, id };
 });
 
 const accountSlice = createSlice({
@@ -93,6 +108,19 @@ const accountSlice = createSlice({
       })
       .addCase(updateAccount.rejected, (state, action) => {
         state.error = action.error.message || "Gagal memperbarui akun.";
+      })
+      .addCase(deleteAccount.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteAccount.fulfilled, (state, action) => {
+        state.loading = false;
+        state.code = action.payload.code;
+        state.message = action.payload.message;
+        state.accounts = state.accounts.filter((item) => item.id !== action.payload.id);
+      })
+      .addCase(deleteAccount.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Gagal menghapus akun.";
       });
   },
 });

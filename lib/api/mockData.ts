@@ -166,7 +166,7 @@ const MOCK_ACCOUNTS: Account[] = [
     id: "a1",
     name: "Budi Santoso",
     username: "budi.headmaster",
-    password: "198005152009011001",
+    nip: "198005152009011001",
     role: "headmaster",
     schoolId: "s1",
     schoolName: "SDN Melati 01",
@@ -175,7 +175,7 @@ const MOCK_ACCOUNTS: Account[] = [
     id: "a2",
     name: "Siti Aminah",
     username: "siti.headmaster",
-    password: "198512102010012002",
+    nip: "198512102010012002",
     role: "headmaster",
     schoolId: "s2",
     schoolName: "TK Ceria Bahagia",
@@ -184,7 +184,7 @@ const MOCK_ACCOUNTS: Account[] = [
     id: "a3",
     name: "Dewi Lestari",
     username: "dewi.headmaster",
-    password: "199003202015012003",
+    nip: "199003202015012003",
     role: "headmaster",
     // Belum ditugaskan ke sekolah manapun — contoh buat testing select di form sekolah.
     schoolId: undefined,
@@ -208,7 +208,7 @@ export async function mockGetAccountList(search: string) {
 export async function mockStoreAccount(
   name: string,
   username: string,
-  password: string,
+  nip: string,
   role: "headmaster",
 ) {
   await delay();
@@ -216,7 +216,7 @@ export async function mockStoreAccount(
     id: `a${Date.now()}`,
     name,
     username,
-    password,
+    nip,
     role,
     schoolId: undefined,
     schoolName: undefined,
@@ -229,20 +229,30 @@ export async function mockStoreAccount(
   };
 }
 
-export async function mockUpdateAccount(id: string, name: string, password: string) {
+export async function mockUpdateAccount(id: string, name: string, nip: string) {
   await delay();
   const index = MOCK_ACCOUNTS.findIndex((a) => a.id === id);
   const current = index !== -1 ? MOCK_ACCOUNTS[index] : MOCK_ACCOUNTS[0];
   const updated: Account = {
     ...current,
     name,
-    password: password ? password : current.password,
+    nip: nip ? nip : current.nip,
   };
   if (index !== -1) MOCK_ACCOUNTS[index] = updated;
   return {
     code: 200,
     message: "Akun berhasil diperbarui (mode dummy).",
     data: { ...updated },
+  };
+}
+
+export async function mockDeleteAccount(id: string) {
+  await delay();
+  const index = MOCK_ACCOUNTS.findIndex((a) => a.id === id);
+  if (index !== -1) MOCK_ACCOUNTS.splice(index, 1);
+  return {
+    code: 200,
+    message: "Akun berhasil dihapus (mode dummy).",
   };
 }
 

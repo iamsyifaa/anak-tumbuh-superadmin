@@ -7,8 +7,8 @@ export interface Account {
   id: string;
   name: string;
   username: string;
-  // Password akun kepsek. Konvensinya pakai NIP (lihat CreateAccountForm).
-  password?: string;
+  // NIP/ID kepala sekolah — sekaligus dipakai sebagai password login.
+  nip?: string;
   role: AccountRole;
   // Akun Kepsek bisa dibuat dulu tanpa sekolah ("belum ditugaskan"),
   // baru ditugaskan ke sekolah lewat form Tambah/Edit Sekolah.
@@ -19,7 +19,7 @@ export interface Account {
 export interface CreateAccountInput {
   name: string;
   username: string;
-  password: string;
+  nip: string;
   role: AccountRole;
 }
 

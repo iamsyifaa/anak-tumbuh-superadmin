@@ -25,7 +25,7 @@ function CreateAccountForm({ onSuccess }: Props) {
   const dispatch = useDispatch<AppDispatch>();
   const { loading } = useSelector((state: RootState) => state.account);
   const [name, setName] = useState("");
-  const [password, setPassword] = useState("");
+  const [nip, setNip] = useState("");
   const [role, setRole] = useState<AccountRole>("headmaster");
 
   const username = useMemo(() => generateUsername(name), [name]);
@@ -35,7 +35,7 @@ function CreateAccountForm({ onSuccess }: Props) {
     const formData = new FormData();
     formData.append("name", name);
     formData.append("username", username);
-    formData.append("password", password);
+    formData.append("nip", nip);
     formData.append("role", role);
 
     const result = await dispatch(storeAccount(formData));
@@ -62,12 +62,12 @@ function CreateAccountForm({ onSuccess }: Props) {
         onChange={(e) => setName(e.target.value)}
       />
       <TextInput
-        id="account-password"
-        name="password"
-        label="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        hint="Gunakan NIP kepala sekolah sebagai password. Wajib diisi."
+        id="account-nip"
+        name="nip"
+        label="NIP/ID"
+        value={nip}
+        onChange={(e) => setNip(e.target.value)}
+        hint="NIP/ID ini sekaligus jadi password login kepala sekolah. Wajib diisi."
       />
       <PrimaryButton type="submit" loading={loading} label="Simpan Akun" />
     </form>

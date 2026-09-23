@@ -4,15 +4,17 @@ import { useEffect, useState } from "react";
 import DataTable from "react-data-table-component";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
-import { getAccountList } from "@/redux/features/account/accountSlice";
+import { getAccountList, deleteAccount } from "@/redux/features/account/accountSlice";
 import { Account } from "@/lib/types/accountType";
 import { useDebounce } from "@/hook/useDebounce";
 import MainCard from "@/components/ui/Card/MainCard";
 import CreateModal from "@/components/ui/Modal/CreateModal";
 import EditModal from "@/components/ui/Modal/EditModal";
 import SuccessModal from "@/components/ui/Modal/SuccessModal";
+import DeleteModal from "@/components/ui/Modal/DeleteModal";
 import TableToolbar from "@/components/common/DataTable/TableToolbar";
 import TableEditButton from "@/components/common/DataTable/TableEditButton";
+import TableDeleteButton from "@/components/common/DataTable/TableDeleteButton";
 import CreateAccountForm from "./CreateAccountForm";
 import EditAccountForm from "./EditAccountForm";
 
@@ -23,6 +25,8 @@ function AccountDataTable() {
   const debouncedSearch = useDebounce(search);
   const [modal, setModal] = useState<"create" | "success" | null>(null);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
+  const [deletingAccount, setDeletingAccount] = useState<Account | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     dispatch(getAccountList({ search: debouncedSearch, page: 1, limit: 10 }));
@@ -31,13 +35,23 @@ function AccountDataTable() {
   const refresh = () =>
     dispatch(getAccountList({ search: debouncedSearch, page: 1, limit: 10 }));
 
+  const handleConfirmDelete = async () => {
+    if (!deletingAccount) return;
+    setDeleting(true);
+    const result = await dispatch(deleteAccount(deletingAccount.id));
+    setDeleting(false);
+    if (deleteAccount.fulfilled.match(result)) {
+      setDeletingAccount(null);
+      refresh();
+    }
+  };
+
   const columns = [
-    { name: "Nama", selector: (row: Account) => row.name, sortable: true },
-    { name: "Username", selector: (row: Account) => row.username },
+    { name: "Nama Lengkap", selector: (row: Account) => row.name, sortable: true },
     {
-      name: "Password",
+      name: "NIP/ID",
       cell: (row: Account) =>
-        row.password ?? <span className="italic text-slate-400">-</span>,
+        row.nip ?? <span className="italic text-slate-400">-</span>,
     },
     {
       name: "Sekolah",
@@ -47,7 +61,10 @@ function AccountDataTable() {
     {
       name: "Aksi",
       cell: (row: Account) => (
-        <TableEditButton onClick={() => setEditingAccount(row)} />
+        <div className="flex items-center gap-3">
+          <TableEditButton onClick={() => setEditingAccount(row)} />
+          <TableDeleteButton onClick={() => setDeletingAccount(row)} />
+        </div>
       ),
     },
   ];
@@ -89,6 +106,16 @@ function AccountDataTable() {
             }}
           />
         </EditModal>
+      )}
+
+      {deletingAccount && (
+        <DeleteModal
+          title="Hapus akun ini?"
+          description={`Akun "${deletingAccount.name}" akan dihapus permanen dan gak bisa dibatalkan.`}
+          loading={deleting}
+          onClose={() => setDeletingAccount(null)}
+          onConfirm={handleConfirmDelete}
+        />
       )}
     </MainCard>
   );
