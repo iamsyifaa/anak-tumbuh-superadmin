@@ -1,7 +1,12 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "@/redux/store";
 import { School } from "@/lib/types/schoolType";
-import { getSchoolListApi, storeSchoolApi, updateSchoolApi } from "@/lib/api/schoolApi";
+import {
+  getSchoolListApi,
+  storeSchoolApi,
+  updateSchoolApi,
+  deleteSchoolApi,
+} from "@/lib/api/schoolApi";
 
 interface SchoolState {
   schools: School[];
@@ -46,6 +51,16 @@ export const updateSchool = createAsyncThunk<
 >("school/updateSchool", async ({ id, formData }, { getState }) => {
   const { accessToken } = getState().auth;
   return updateSchoolApi(id, formData, accessToken);
+});
+
+export const deleteSchool = createAsyncThunk<
+  { code: number; message: string; id: string },
+  string,
+  { state: RootState }
+>("school/deleteSchool", async (id, { getState }) => {
+  const { accessToken } = getState().auth;
+  const response = await deleteSchoolApi(id, accessToken);
+  return { ...response, id };
 });
 
 const schoolSlice = createSlice({
@@ -93,6 +108,19 @@ const schoolSlice = createSlice({
       })
       .addCase(updateSchool.rejected, (state, action) => {
         state.error = action.error.message || "Gagal memperbarui sekolah.";
+      })
+      .addCase(deleteSchool.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteSchool.fulfilled, (state, action) => {
+        state.loading = false;
+        state.code = action.payload.code;
+        state.message = action.payload.message;
+        state.schools = state.schools.filter((item) => item.id !== action.payload.id);
+      })
+      .addCase(deleteSchool.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Gagal menghapus sekolah.";
       });
   },
 });

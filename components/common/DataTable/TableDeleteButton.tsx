@@ -1,3 +1,5 @@
+import { HiOutlineTrash } from "react-icons/hi2";
+
 interface Props {
   onClick: () => void;
 }
@@ -7,9 +9,11 @@ function TableDeleteButton({ onClick }: Props) {
     <button
       type="button"
       onClick={onClick}
-      className="text-sm font-semibold text-rose-600 hover:underline"
+      aria-label="Hapus"
+      title="Hapus"
+      className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-rose-600 transition hover:bg-rose-50"
     >
-      Hapus
+      <HiOutlineTrash className="h-4 w-4" />
     </button>
   );
 }

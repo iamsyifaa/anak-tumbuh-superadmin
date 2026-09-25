@@ -161,6 +161,16 @@ export async function mockUpdateSchool(id: string, headmasterAccountId?: string)
   };
 }
 
+export async function mockDeleteSchool(id: string) {
+  await delay();
+  const index = MOCK_SCHOOLS.findIndex((s) => s.id === id);
+  if (index !== -1) MOCK_SCHOOLS.splice(index, 1);
+  return {
+    code: 200,
+    message: "Sekolah berhasil dihapus (mode dummy).",
+  };
+}
+
 const MOCK_ACCOUNTS: Account[] = [
   {
     id: "a1",

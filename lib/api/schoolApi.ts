@@ -1,6 +1,11 @@
 import { envConfig } from "@/lib/config/envConfig";
 import { EducationLevel } from "@/lib/types/schoolType";
-import { mockGetSchoolList, mockStoreSchool, mockUpdateSchool } from "./mockData";
+import {
+  mockGetSchoolList,
+  mockStoreSchool,
+  mockUpdateSchool,
+  mockDeleteSchool,
+} from "./mockData";
 
 const authHeaders = (token: string) => ({
   Accept: "application/json",
@@ -47,6 +52,16 @@ export const updateSchoolApi = async (id: string, formData: FormData, token: str
     method: "POST",
     headers: authHeaders(token),
     body: formData,
+  });
+  return parseSchoolResponse(response);
+};
+
+export const deleteSchoolApi = async (id: string, token: string) => {
+  if (envConfig.useMockApi) return mockDeleteSchool(id);
+
+  const response = await fetch(`${envConfig.apiBaseUrl}/v1/schools/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
   });
   return parseSchoolResponse(response);
 };
