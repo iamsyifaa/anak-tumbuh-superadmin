@@ -27,7 +27,12 @@ const initialState: SchoolState = {
 };
 
 export const getSchoolList = createAsyncThunk<
-  { code: number; message: string; data: School[]; pagination: { total_items: number } },
+  {
+    code: number;
+    message: string;
+    data: School[];
+    pagination: { total_items: number };
+  },
   { search: string; page: number; limit: number },
   { state: RootState }
 >("school/getSchoolList", async ({ search, page, limit }, { getState }) => {
@@ -90,22 +95,45 @@ const schoolSlice = createSlice({
       .addCase(storeSchool.pending, (state) => {
         state.loading = true;
       })
-      .addCase(storeSchool.fulfilled, (state, action: PayloadAction<{ code: number; message: string; data: School }>) => {
-        state.loading = false;
-        state.code = action.payload.code;
-        state.message = action.payload.message;
-        if (action.payload.code === 201) state.schools.unshift(action.payload.data);
-      })
+      .addCase(
+        storeSchool.fulfilled,
+        (
+          state,
+          action: PayloadAction<{
+            code: number;
+            message: string;
+            data: School;
+          }>,
+        ) => {
+          state.loading = false;
+          state.code = action.payload.code;
+          state.message = action.payload.message;
+          if (action.payload.code === 201)
+            state.schools.unshift(action.payload.data);
+        },
+      )
       .addCase(storeSchool.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Gagal menambahkan sekolah.";
       })
-      .addCase(updateSchool.fulfilled, (state, action: PayloadAction<{ code: number; message: string; data: School }>) => {
-        state.code = action.payload.code;
-        state.message = action.payload.message;
-        const index = state.schools.findIndex((item) => item.id === action.payload.data.id);
-        if (index !== -1) state.schools[index] = action.payload.data;
-      })
+      .addCase(
+        updateSchool.fulfilled,
+        (
+          state,
+          action: PayloadAction<{
+            code: number;
+            message: string;
+            data: School;
+          }>,
+        ) => {
+          state.code = action.payload.code;
+          state.message = action.payload.message;
+          const index = state.schools.findIndex(
+            (item) => item.id === action.payload.data.id,
+          );
+          if (index !== -1) state.schools[index] = action.payload.data;
+        },
+      )
       .addCase(updateSchool.rejected, (state, action) => {
         state.error = action.error.message || "Gagal memperbarui sekolah.";
       })
@@ -116,7 +144,9 @@ const schoolSlice = createSlice({
         state.loading = false;
         state.code = action.payload.code;
         state.message = action.payload.message;
-        state.schools = state.schools.filter((item) => item.id !== action.payload.id);
+        state.schools = state.schools.filter(
+          (item) => item.id !== action.payload.id,
+        );
       })
       .addCase(deleteSchool.rejected, (state, action) => {
         state.loading = false;

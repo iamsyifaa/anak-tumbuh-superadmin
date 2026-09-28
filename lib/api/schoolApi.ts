@@ -12,13 +12,25 @@ const authHeaders = (token: string) => ({
   Authorization: `Bearer ${token}`,
 });
 
-export const getSchoolListApi = async (token: string, search: string, page: number, limit: number) => {
+export const getSchoolListApi = async (
+  token: string,
+  search: string,
+  page: number,
+  limit: number,
+) => {
   if (envConfig.useMockApi) return mockGetSchoolList(search);
 
-  const params = new URLSearchParams({ search, page: String(page), limit: String(limit) });
-  const response = await fetch(`${envConfig.apiBaseUrl}/v1/schools?${params.toString()}`, {
-    headers: authHeaders(token),
+  const params = new URLSearchParams({
+    search,
+    page: String(page),
+    limit: String(limit),
   });
+  const response = await fetch(
+    `${envConfig.apiBaseUrl}/v1/schools?${params.toString()}`,
+    {
+      headers: authHeaders(token),
+    },
+  );
   return response.json();
 };
 
@@ -29,7 +41,7 @@ export const storeSchoolApi = async (formData: FormData, token: string) => {
       String(formData.get("name")),
       formData.get("level") as EducationLevel,
       String(formData.get("address")),
-      headmasterAccountId ? String(headmasterAccountId) : undefined
+      headmasterAccountId ? String(headmasterAccountId) : undefined,
     );
   }
 
@@ -41,10 +53,17 @@ export const storeSchoolApi = async (formData: FormData, token: string) => {
   return parseSchoolResponse(response);
 };
 
-export const updateSchoolApi = async (id: string, formData: FormData, token: string) => {
+export const updateSchoolApi = async (
+  id: string,
+  formData: FormData,
+  token: string,
+) => {
   if (envConfig.useMockApi) {
     const headmasterAccountId = formData.get("headmaster_account_id");
-    return mockUpdateSchool(id, headmasterAccountId ? String(headmasterAccountId) : undefined);
+    return mockUpdateSchool(
+      id,
+      headmasterAccountId ? String(headmasterAccountId) : undefined,
+    );
   }
 
   formData.append("_method", "PUT");
@@ -79,7 +98,7 @@ const parseSchoolResponse = async (response: Response) => {
     throw new Error(
       response.ok
         ? "Server memberi respons yang tidak valid."
-        : `Gagal menghubungi server (status ${response.status}). Pastikan NEXT_PUBLIC_API_BASE_URL sudah benar.`
+        : `Gagal menghubungi server (status ${response.status}). Pastikan NEXT_PUBLIC_API_BASE_URL sudah benar.`,
     );
   }
 };

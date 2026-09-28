@@ -15,7 +15,10 @@ interface Props {
 function MainSelect({ id, name, label, value, options, onChange }: Props) {
   return (
     <div>
-      <label htmlFor={id} className="block text-[10px] font-black uppercase tracking-wider text-[#203A5B] sm:text-xs">
+      <label
+        htmlFor={id}
+        className="block text-[10px] font-black uppercase tracking-wider text-[#203A5B] sm:text-xs"
+      >
         {label}
       </label>
       <select

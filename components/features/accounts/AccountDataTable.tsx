@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 import DataTable from "react-data-table-component";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
-import { getAccountList, deleteAccount } from "@/redux/features/account/accountSlice";
+import {
+  getAccountList,
+  deleteAccount,
+} from "@/redux/features/account/accountSlice";
 import { Account } from "@/lib/types/accountType";
 import { useDebounce } from "@/hook/useDebounce";
 import MainCard from "@/components/ui/Card/MainCard";
@@ -20,7 +23,9 @@ import EditAccountForm from "./EditAccountForm";
 
 function AccountDataTable() {
   const dispatch = useDispatch<AppDispatch>();
-  const { accounts, loading } = useSelector((state: RootState) => state.account);
+  const { accounts, loading } = useSelector(
+    (state: RootState) => state.account,
+  );
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search);
   const [modal, setModal] = useState<"create" | "success" | null>(null);
@@ -47,7 +52,11 @@ function AccountDataTable() {
   };
 
   const columns = [
-    { name: "Nama Lengkap", selector: (row: Account) => row.name, sortable: true },
+    {
+      name: "Nama Lengkap",
+      selector: (row: Account) => row.name,
+      sortable: true,
+    },
     {
       name: "NIP/ID",
       cell: (row: Account) =>
@@ -56,7 +65,9 @@ function AccountDataTable() {
     {
       name: "Sekolah",
       cell: (row: Account) =>
-        row.schoolName ?? <span className="italic text-slate-400">Belum ditugaskan</span>,
+        row.schoolName ?? (
+          <span className="italic text-slate-400">Belum ditugaskan</span>
+        ),
     },
     {
       name: "Aksi",
@@ -79,7 +90,12 @@ function AccountDataTable() {
         onAction={() => setModal("create")}
       />
 
-      <DataTable columns={columns} data={accounts} progressPending={loading} pagination />
+      <DataTable
+        columns={columns}
+        data={accounts}
+        progressPending={loading}
+        pagination
+      />
 
       {modal === "create" && (
         <CreateModal title="Tambah Akun Baru" onClose={() => setModal(null)}>
@@ -93,7 +109,10 @@ function AccountDataTable() {
       )}
 
       {modal === "success" && (
-        <SuccessModal description="Akun berhasil disimpan." onClose={() => setModal(null)} />
+        <SuccessModal
+          description="Akun berhasil disimpan."
+          onClose={() => setModal(null)}
+        />
       )}
 
       {editingAccount && (

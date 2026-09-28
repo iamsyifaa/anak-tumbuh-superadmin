@@ -44,7 +44,9 @@ function DashboardLayout({ children, pageName }: Props) {
       <MainSidebar onClickLogout={() => setOpenLogout(true)} />
       <MainBreadcrumb pageName={pageName} />
       <div className="lg:pl-64">
-        <div className="px-4 pb-24 pt-4 md:px-8 lg:px-10 lg:pb-10">{children}</div>
+        <div className="px-4 pb-24 pt-4 md:px-8 lg:px-10 lg:pb-10">
+          {children}
+        </div>
       </div>
       <MainBottomNav onClickLogout={() => setOpenLogout(true)} />
       {openLogout && <LogoutModal onClose={() => setOpenLogout(false)} />}

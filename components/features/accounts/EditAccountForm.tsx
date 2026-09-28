@@ -31,7 +31,13 @@ function EditAccountForm({ account, onSuccess }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <TextInput id="edit-account-name" name="name" label="Nama Lengkap" value={name} onChange={(e) => setName(e.target.value)} />
+      <TextInput
+        id="edit-account-name"
+        name="name"
+        label="Nama Lengkap"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
       <TextInput
         id="edit-account-nip"
         name="nip"

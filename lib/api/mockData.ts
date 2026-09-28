@@ -127,13 +127,21 @@ export async function mockStoreSchool(
   };
 }
 
-export async function mockUpdateSchool(id: string, headmasterAccountId?: string) {
+export async function mockUpdateSchool(
+  id: string,
+  headmasterAccountId?: string,
+) {
   await delay();
   const school = MOCK_SCHOOLS.find((s) => s.id === id) ?? MOCK_SCHOOLS[0];
 
   // Lepas kepsek lama kalau beda dari yang baru dipilih.
-  if (school.headmasterAccountId && school.headmasterAccountId !== headmasterAccountId) {
-    const previous = MOCK_ACCOUNTS.find((a) => a.id === school.headmasterAccountId);
+  if (
+    school.headmasterAccountId &&
+    school.headmasterAccountId !== headmasterAccountId
+  ) {
+    const previous = MOCK_ACCOUNTS.find(
+      (a) => a.id === school.headmasterAccountId,
+    );
     if (previous) {
       previous.schoolId = undefined;
       previous.schoolName = undefined;

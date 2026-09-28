@@ -10,7 +10,15 @@ interface Props {
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-function PasswordField({ id, name, label, placeholder, value, autoComplete, onChange }: Props) {
+function PasswordField({
+  id,
+  name,
+  label,
+  placeholder,
+  value,
+  autoComplete,
+  onChange,
+}: Props) {
   return (
     <div>
       <label

@@ -60,7 +60,7 @@ const authSlice = createSlice({
           state.message = action.payload.message;
           state.user = action.payload.data;
           state.accessToken = action.payload.access_token;
-        }
+        },
       )
       .addCase(loginWithPassword.rejected, (state, action) => {
         state.loading = false;

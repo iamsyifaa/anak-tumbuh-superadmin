@@ -27,7 +27,12 @@ const initialState: AccountState = {
 };
 
 export const getAccountList = createAsyncThunk<
-  { code: number; message: string; data: Account[]; pagination: { total_items: number } },
+  {
+    code: number;
+    message: string;
+    data: Account[];
+    pagination: { total_items: number };
+  },
   { search: string; page: number; limit: number },
   { state: RootState }
 >("account/getAccountList", async ({ search, page, limit }, { getState }) => {
@@ -90,22 +95,45 @@ const accountSlice = createSlice({
       .addCase(storeAccount.pending, (state) => {
         state.loading = true;
       })
-      .addCase(storeAccount.fulfilled, (state, action: PayloadAction<{ code: number; message: string; data: Account }>) => {
-        state.loading = false;
-        state.code = action.payload.code;
-        state.message = action.payload.message;
-        if (action.payload.code === 201) state.accounts.unshift(action.payload.data);
-      })
+      .addCase(
+        storeAccount.fulfilled,
+        (
+          state,
+          action: PayloadAction<{
+            code: number;
+            message: string;
+            data: Account;
+          }>,
+        ) => {
+          state.loading = false;
+          state.code = action.payload.code;
+          state.message = action.payload.message;
+          if (action.payload.code === 201)
+            state.accounts.unshift(action.payload.data);
+        },
+      )
       .addCase(storeAccount.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Gagal menambahkan akun.";
       })
-      .addCase(updateAccount.fulfilled, (state, action: PayloadAction<{ code: number; message: string; data: Account }>) => {
-        state.code = action.payload.code;
-        state.message = action.payload.message;
-        const index = state.accounts.findIndex((item) => item.id === action.payload.data.id);
-        if (index !== -1) state.accounts[index] = action.payload.data;
-      })
+      .addCase(
+        updateAccount.fulfilled,
+        (
+          state,
+          action: PayloadAction<{
+            code: number;
+            message: string;
+            data: Account;
+          }>,
+        ) => {
+          state.code = action.payload.code;
+          state.message = action.payload.message;
+          const index = state.accounts.findIndex(
+            (item) => item.id === action.payload.data.id,
+          );
+          if (index !== -1) state.accounts[index] = action.payload.data;
+        },
+      )
       .addCase(updateAccount.rejected, (state, action) => {
         state.error = action.error.message || "Gagal memperbarui akun.";
       })
@@ -116,7 +144,9 @@ const accountSlice = createSlice({
         state.loading = false;
         state.code = action.payload.code;
         state.message = action.payload.message;
-        state.accounts = state.accounts.filter((item) => item.id !== action.payload.id);
+        state.accounts = state.accounts.filter(
+          (item) => item.id !== action.payload.id,
+        );
       })
       .addCase(deleteAccount.rejected, (state, action) => {
         state.loading = false;

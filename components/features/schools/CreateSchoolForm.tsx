@@ -3,7 +3,10 @@
 import { SyntheticEvent, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
-import { clearSchoolMessage, storeSchool } from "@/redux/features/school/schoolSlice";
+import {
+  clearSchoolMessage,
+  storeSchool,
+} from "@/redux/features/school/schoolSlice";
 import { getAccountList } from "@/redux/features/account/accountSlice";
 import { EducationLevel } from "@/lib/types/schoolType";
 import TextInput from "@/components/ui/Input/TextInput";
@@ -18,7 +21,9 @@ interface Props {
 // Requirement doc bagian 2: cuma Super Admin yang bisa bikin sekolah baru.
 function CreateSchoolForm({ onSuccess }: Props) {
   const dispatch = useDispatch<AppDispatch>();
-  const { loading, code, message, error } = useSelector((state: RootState) => state.school);
+  const { loading, code, message, error } = useSelector(
+    (state: RootState) => state.school,
+  );
   const { accounts } = useSelector((state: RootState) => state.account);
   const [name, setName] = useState("");
   const [level, setLevel] = useState<EducationLevel>("SD");
@@ -43,7 +48,7 @@ function CreateSchoolForm({ onSuccess }: Props) {
   // boleh dipilih di sini.
   const availableHeadmasters = useMemo(
     () => accounts.filter((account) => !account.schoolId),
-    [accounts]
+    [accounts],
   );
 
   const handleSubmit = async (event: SyntheticEvent) => {
@@ -66,7 +71,10 @@ function CreateSchoolForm({ onSuccess }: Props) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {errorMessage && (
-        <ErrorAlert message={errorMessage} onClose={() => dispatch(clearSchoolMessage())} />
+        <ErrorAlert
+          message={errorMessage}
+          onClose={() => dispatch(clearSchoolMessage())}
+        />
       )}
       <TextInput
         id="school-name"

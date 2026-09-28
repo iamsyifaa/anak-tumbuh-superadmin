@@ -50,7 +50,8 @@ const reportSlice = createSlice({
       })
       .addCase(getPlatformSummary.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || "Gagal memuat ringkasan platform.";
+        state.error =
+          action.error.message || "Gagal memuat ringkasan platform.";
       })
       .addCase(getSchoolRecap.pending, (state) => {
         state.loading = true;

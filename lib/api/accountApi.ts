@@ -12,13 +12,25 @@ const authHeaders = (token: string) => ({
   Authorization: `Bearer ${token}`,
 });
 
-export const getAccountListApi = async (token: string, search: string, page: number, limit: number) => {
+export const getAccountListApi = async (
+  token: string,
+  search: string,
+  page: number,
+  limit: number,
+) => {
   if (envConfig.useMockApi) return mockGetAccountList(search);
 
-  const params = new URLSearchParams({ search, page: String(page), limit: String(limit) });
-  const response = await fetch(`${envConfig.apiBaseUrl}/v1/accounts?${params.toString()}`, {
-    headers: authHeaders(token),
+  const params = new URLSearchParams({
+    search,
+    page: String(page),
+    limit: String(limit),
   });
+  const response = await fetch(
+    `${envConfig.apiBaseUrl}/v1/accounts?${params.toString()}`,
+    {
+      headers: authHeaders(token),
+    },
+  );
   return response.json();
 };
 
@@ -40,9 +52,17 @@ export const storeAccountApi = async (formData: FormData, token: string) => {
   return response.json();
 };
 
-export const updateAccountApi = async (id: string, formData: FormData, token: string) => {
+export const updateAccountApi = async (
+  id: string,
+  formData: FormData,
+  token: string,
+) => {
   if (envConfig.useMockApi) {
-    return mockUpdateAccount(id, String(formData.get("name")), String(formData.get("nip")));
+    return mockUpdateAccount(
+      id,
+      String(formData.get("name")),
+      String(formData.get("nip")),
+    );
   }
 
   formData.append("_method", "PUT");

@@ -23,7 +23,9 @@ function LogoutModal({ onClose }: { onClose: () => void }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-xl">
         <h3 className="text-lg font-bold text-[#203A5B]">Keluar dari akun?</h3>
-        <p className="mt-2 text-sm text-gray-500">Kamu perlu login lagi untuk melanjutkan.</p>
+        <p className="mt-2 text-sm text-gray-500">
+          Kamu perlu login lagi untuk melanjutkan.
+        </p>
         <div className="mt-6 flex justify-center gap-3">
           <button
             type="button"
@@ -32,7 +34,11 @@ function LogoutModal({ onClose }: { onClose: () => void }) {
           >
             Batal
           </button>
-          <PrimaryButton label="Keluar" loading={loading} onClick={handleSignout} />
+          <PrimaryButton
+            label="Keluar"
+            loading={loading}
+            onClick={handleSignout}
+          />
         </div>
       </div>
     </div>

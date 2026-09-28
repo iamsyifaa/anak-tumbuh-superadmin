@@ -2,7 +2,14 @@
 
 import { useEffect } from "react";
 import { Bar } from "react-chartjs-2";
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Tooltip, Legend } from "chart.js";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Tooltip,
+  Legend,
+} from "chart.js";
 import { format, startOfMonth } from "date-fns";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
@@ -34,7 +41,10 @@ function SchoolBarChart() {
 
   return (
     <MainCard title="Rata-rata Poin per Sekolah — Bulan Ini">
-      <Bar data={data} options={{ responsive: true, plugins: { legend: { display: false } } }} />
+      <Bar
+        data={data}
+        options={{ responsive: true, plugins: { legend: { display: false } } }}
+      />
     </MainCard>
   );
 }

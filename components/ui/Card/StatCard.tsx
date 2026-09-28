@@ -13,7 +13,9 @@ function StatCard({ label, value, icon: Icon, loading }: Props) {
       <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#D7EFFF] text-[#203A5B] transition group-hover:scale-105">
         <Icon className="h-5 w-5" />
       </div>
-      <p className="mt-4 text-[10px] font-black uppercase tracking-wider text-slate-400">{label}</p>
+      <p className="mt-4 text-[10px] font-black uppercase tracking-wider text-slate-400">
+        {label}
+      </p>
       <p className="mt-1 font-heading text-2xl font-extrabold text-[#203A5B] sm:text-3xl">
         {loading ? "—" : value}
       </p>

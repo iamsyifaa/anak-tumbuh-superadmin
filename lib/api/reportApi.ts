@@ -15,12 +15,22 @@ export const getPlatformSummaryApi = async (token: string) => {
   return response.json();
 };
 
-export const getSchoolRecapApi = async (token: string, startDate: string, endDate: string) => {
+export const getSchoolRecapApi = async (
+  token: string,
+  startDate: string,
+  endDate: string,
+) => {
   if (envConfig.useMockApi) return mockGetSchoolRecap();
 
-  const params = new URLSearchParams({ start_date: startDate, end_date: endDate });
-  const response = await fetch(`${envConfig.apiBaseUrl}/v1/reports/schools?${params.toString()}`, {
-    headers: authHeaders(token),
+  const params = new URLSearchParams({
+    start_date: startDate,
+    end_date: endDate,
   });
+  const response = await fetch(
+    `${envConfig.apiBaseUrl}/v1/reports/schools?${params.toString()}`,
+    {
+      headers: authHeaders(token),
+    },
+  );
   return response.json();
 };

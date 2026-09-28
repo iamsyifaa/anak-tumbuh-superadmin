@@ -6,11 +6,14 @@ import { RootState } from "@/redux/store";
 import MainCard from "@/components/ui/Card/MainCard";
 
 function SchoolFillRateList() {
-  const { schoolRecap, loading } = useSelector((state: RootState) => state.report);
+  const { schoolRecap, loading } = useSelector(
+    (state: RootState) => state.report,
+  );
 
   const sorted = useMemo(
-    () => [...schoolRecap].sort((a, b) => b.fillRatePercent - a.fillRatePercent),
-    [schoolRecap]
+    () =>
+      [...schoolRecap].sort((a, b) => b.fillRatePercent - a.fillRatePercent),
+    [schoolRecap],
   );
 
   return (
@@ -27,8 +30,12 @@ function SchoolFillRateList() {
         {sorted.map((school) => (
           <div key={school.schoolId}>
             <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-[#203A5B]">{school.schoolName}</span>
-              <span className="font-black text-[#203A5B]">{school.fillRatePercent}%</span>
+              <span className="font-bold text-[#203A5B]">
+                {school.schoolName}
+              </span>
+              <span className="font-black text-[#203A5B]">
+                {school.fillRatePercent}%
+              </span>
             </div>
             <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-[#D7EFFF]">
               <div

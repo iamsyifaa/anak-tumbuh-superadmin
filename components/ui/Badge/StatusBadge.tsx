@@ -12,7 +12,9 @@ interface Props {
 
 function StatusBadge({ label, tone = "active" }: Props) {
   return (
-    <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-extrabold ${STYLES[tone] ?? STYLES.active}`}>
+    <span
+      className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-extrabold ${STYLES[tone] ?? STYLES.active}`}
+    >
       {label}
     </span>
   );

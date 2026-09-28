@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 import DataTable from "react-data-table-component";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
-import { getSchoolList, deleteSchool } from "@/redux/features/school/schoolSlice";
+import {
+  getSchoolList,
+  deleteSchool,
+} from "@/redux/features/school/schoolSlice";
 import { School } from "@/lib/types/schoolType";
 import { useDebounce } from "@/hook/useDebounce";
 import MainCard from "@/components/ui/Card/MainCard";
@@ -47,9 +50,16 @@ function SchoolDataTable() {
   };
 
   const columns = [
-    { name: "Nama Sekolah", selector: (row: School) => row.name, sortable: true },
+    {
+      name: "Nama Sekolah",
+      selector: (row: School) => row.name,
+      sortable: true,
+    },
     { name: "Jenjang", selector: (row: School) => row.level },
-    { name: "Kepala Sekolah", selector: (row: School) => row.headmasterName ?? "-" },
+    {
+      name: "Kepala Sekolah",
+      selector: (row: School) => row.headmasterName ?? "-",
+    },
     {
       name: "Aksi",
       cell: (row: School) => (
@@ -71,7 +81,12 @@ function SchoolDataTable() {
         onAction={() => setModal("create")}
       />
 
-      <DataTable columns={columns} data={schools} progressPending={loading} pagination />
+      <DataTable
+        columns={columns}
+        data={schools}
+        progressPending={loading}
+        pagination
+      />
 
       {modal === "create" && (
         <CreateModal title="Tambah Sekolah Baru" onClose={() => setModal(null)}>
@@ -85,7 +100,10 @@ function SchoolDataTable() {
       )}
 
       {modal === "success" && (
-        <SuccessModal description="Sekolah berhasil disimpan." onClose={() => setModal(null)} />
+        <SuccessModal
+          description="Sekolah berhasil disimpan."
+          onClose={() => setModal(null)}
+        />
       )}
 
       {editingSchool && (

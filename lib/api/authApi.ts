@@ -6,10 +6,13 @@ import { mockLogin } from "./mockData";
 // login menggunakan Username/Email + Password yang diamankan Laravel
 // Sanctum. Tidak ada login QR di app ini — QR hanya untuk Student.
 export const loginWithPasswordApi = async (
-  formData: FormData
+  formData: FormData,
 ): Promise<AuthApiResponse> => {
   if (envConfig.useMockApi) {
-    return mockLogin(String(formData.get("username")), String(formData.get("password")));
+    return mockLogin(
+      String(formData.get("username")),
+      String(formData.get("password")),
+    );
   }
 
   const response = await fetch(`${envConfig.apiBaseUrl}/v1/auth/login`, {

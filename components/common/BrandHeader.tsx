@@ -10,7 +10,9 @@ function BrandHeader({ subtitle = "Masuk sebagai Super Admin" }: Props) {
       <h1 className="text-xl font-black tracking-tight text-[#203A5B] sm:text-3xl">
         anaktumbuh.id
       </h1>
-      <p className="mt-1 text-sm font-bold text-[#203A5B] sm:text-base">{subtitle}</p>
+      <p className="mt-1 text-sm font-bold text-[#203A5B] sm:text-base">
+        {subtitle}
+      </p>
     </div>
   );
 }

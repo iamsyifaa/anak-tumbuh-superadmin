@@ -9,7 +9,14 @@ function AvatarProfile({ name, avatarUrl, size = 40 }: Props) {
 
   if (avatarUrl) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={avatarUrl} alt={name} style={{ width: size, height: size }} className="rounded-full object-cover" />;
+    return (
+      <img
+        src={avatarUrl}
+        alt={name}
+        style={{ width: size, height: size }}
+        className="rounded-full object-cover"
+      />
+    );
   }
 
   return (

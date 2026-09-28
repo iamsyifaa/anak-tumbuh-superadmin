@@ -11,7 +11,13 @@ interface Props {
 // Dipakai buat konfirmasi tindakan yang gak bisa dibatalkan (bukan cuma
 // hapus data) — dipisah dari CreateModal/EditModal karena tujuannya beda:
 // minta konfirmasi, bukan nampilin form.
-function DeleteModal({ title = "Yakin?", description, loading, onClose, onConfirm }: Props) {
+function DeleteModal({
+  title = "Yakin?",
+  description,
+  loading,
+  onClose,
+  onConfirm,
+}: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-xl">

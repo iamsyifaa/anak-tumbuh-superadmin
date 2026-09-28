@@ -25,6 +25,6 @@ export function useRedirectAfterLogin() {
       router.push("/dashboard");
       return { allowed: true };
     },
-    [router]
+    [router],
   );
 }

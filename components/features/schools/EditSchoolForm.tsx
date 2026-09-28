@@ -3,7 +3,10 @@
 import { SyntheticEvent, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
-import { clearSchoolMessage, updateSchool } from "@/redux/features/school/schoolSlice";
+import {
+  clearSchoolMessage,
+  updateSchool,
+} from "@/redux/features/school/schoolSlice";
 import { getAccountList } from "@/redux/features/account/accountSlice";
 import { EducationLevel, School } from "@/lib/types/schoolType";
 import TextInput from "@/components/ui/Input/TextInput";
@@ -18,13 +21,15 @@ interface Props {
 
 function EditSchoolForm({ school, onSuccess }: Props) {
   const dispatch = useDispatch<AppDispatch>();
-  const { loading, code, message, error } = useSelector((state: RootState) => state.school);
+  const { loading, code, message, error } = useSelector(
+    (state: RootState) => state.school,
+  );
   const { accounts } = useSelector((state: RootState) => state.account);
   const [name, setName] = useState(school.name);
   const [level, setLevel] = useState<EducationLevel>(school.level);
   const [address, setAddress] = useState(school.address ?? "");
   const [headmasterAccountId, setHeadmasterAccountId] = useState(
-    school.headmasterAccountId ?? ""
+    school.headmasterAccountId ?? "",
   );
 
   useEffect(() => {
@@ -42,9 +47,9 @@ function EditSchoolForm({ school, onSuccess }: Props) {
   const availableHeadmasters = useMemo(
     () =>
       accounts.filter(
-        (account) => !account.schoolId || account.schoolId === school.id
+        (account) => !account.schoolId || account.schoolId === school.id,
       ),
-    [accounts, school.id]
+    [accounts, school.id],
   );
 
   const handleSubmit = async (event: SyntheticEvent) => {
@@ -57,15 +62,25 @@ function EditSchoolForm({ school, onSuccess }: Props) {
     formData.append("headmaster_account_id", headmasterAccountId);
 
     const result = await dispatch(updateSchool({ id: school.id, formData }));
-    if (updateSchool.fulfilled.match(result) && result.payload.code === 200) onSuccess();
+    if (updateSchool.fulfilled.match(result) && result.payload.code === 200)
+      onSuccess();
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {errorMessage && (
-        <ErrorAlert message={errorMessage} onClose={() => dispatch(clearSchoolMessage())} />
+        <ErrorAlert
+          message={errorMessage}
+          onClose={() => dispatch(clearSchoolMessage())}
+        />
       )}
-      <TextInput id="edit-school-name" name="name" label="Nama Sekolah" value={name} onChange={(e) => setName(e.target.value)} />
+      <TextInput
+        id="edit-school-name"
+        name="name"
+        label="Nama Sekolah"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
       <MainSelect
         id="edit-school-level"
         name="level"
