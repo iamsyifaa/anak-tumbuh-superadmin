@@ -18,6 +18,7 @@ function SuperAdminLoginForm() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [deniedMessage, setDeniedMessage] = useState<string | null>(null);
+  const [coolingDown, setCoolingDown] = useState(false);
   const redirectAfterLogin = useRedirectAfterLogin();
   const dispatch = useDispatch<AppDispatch>();
   const { loading, error } = useSelector((state: RootState) => state.auth);
@@ -27,23 +28,28 @@ function SuperAdminLoginForm() {
     dispatch(clearAuthMessage());
     setDeniedMessage(null);
 
-    const formData = new FormData();
-    formData.append("username", username.trim());
-    formData.append("password", password);
+    const result = await dispatch(
+      loginWithPassword({ username: username.trim(), password }),
+    );
 
-    const result = await dispatch(loginWithPassword({ formData }));
-
-    if (
-      loginWithPassword.fulfilled.match(result) &&
-      result.payload.code === 200
-    ) {
+    if (loginWithPassword.fulfilled.match(result)) {
       const { allowed } = redirectAfterLogin(
-        result.payload.access_token,
-        result.payload.data,
+        result.payload.accessToken,
+        result.payload.user,
       );
       if (!allowed) {
         setDeniedMessage("Akun ini bukan akun Super Admin.");
       }
+      return;
+    }
+
+    // 429 (rate limit): jangan retry otomatis; tahan tombol sebentar.
+    if (
+      loginWithPassword.rejected.match(result) &&
+      result.error.code === "rate_limit_exceeded"
+    ) {
+      setCoolingDown(true);
+      setTimeout(() => setCoolingDown(false), 30_000);
     }
   };
 
@@ -94,10 +100,14 @@ function SuperAdminLoginForm() {
 
         <button
           type="submit"
-          disabled={loading || !username.trim() || !password}
+          disabled={loading || coolingDown || !username.trim() || !password}
           className="w-full rounded-xl border-b-4 border-[#203A5B] bg-[#203A5B] py-2.5 text-[11px] font-black text-white shadow-lg shadow-[#203A5B]/40 transition-all hover:scale-[1.02] hover:bg-[#162d47] active:scale-95 active:translate-y-1 active:border-b-0 active:shadow-md disabled:cursor-not-allowed disabled:hover:scale-100 sm:rounded-2xl sm:py-4 sm:text-base"
         >
-          {loading ? "Memverifikasi..." : "Masuk"}
+          {loading
+            ? "Memverifikasi..."
+            : coolingDown
+              ? "Tunggu sebentar..."
+              : "Masuk"}
         </button>
       </form>
     </>

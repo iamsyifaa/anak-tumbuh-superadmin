@@ -1,12 +1,15 @@
-import { loginWithPasswordApi } from "@/lib/api/authApi";
-import { AuthApiResponse, AuthenticatedUser } from "@/lib/types/authType";
+import { fetchCurrentUserApi, loginWithPasswordApi } from "@/lib/api/authApi";
+import { getAccessToken } from "@/lib/api/client";
+import type {
+  AuthenticatedUser,
+  AuthResult,
+  PasswordLoginPayload,
+} from "@/lib/types/authType";
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface AuthState {
   user: AuthenticatedUser | null;
   accessToken: string;
-  code: number;
-  message: string | null;
   loading: boolean;
   error: string | null;
 }
@@ -14,19 +17,28 @@ interface AuthState {
 const initialState: AuthState = {
   user: null,
   accessToken: "",
-  code: 0,
-  message: null,
   loading: false,
   error: null,
 };
 
+// Login gagal = thunk rejected (ApiError dilempar dari lib/api/client),
+// jadi komponen cukup mengecek fulfilled/rejected, bukan response.code.
 export const loginWithPassword = createAsyncThunk<
-  AuthApiResponse,
-  { formData: FormData }
->("auth/loginWithPassword", async ({ formData }) => {
-  const response = await loginWithPasswordApi(formData);
-  return response;
-});
+  AuthResult,
+  PasswordLoginPayload
+>("auth/loginWithPassword", (payload) => loginWithPasswordApi(payload));
+
+// Redux hilang saat refresh sedangkan token ada di localStorage: pulihkan
+// data user lewat GET /auth/me.
+export const restoreSession = createAsyncThunk<AuthResult>(
+  "auth/restoreSession",
+  async () => {
+    const accessToken = getAccessToken();
+    if (!accessToken) throw new Error("Belum login.");
+    const user = await fetchCurrentUserApi(accessToken);
+    return { accessToken, user };
+  },
+);
 
 const authSlice = createSlice({
   name: "auth",
@@ -35,14 +47,10 @@ const authSlice = createSlice({
     resetAuth: (state) => {
       state.user = null;
       state.accessToken = "";
-      state.code = 0;
-      state.message = null;
       state.loading = false;
       state.error = null;
     },
     clearAuthMessage: (state) => {
-      state.code = 0;
-      state.message = null;
       state.error = null;
     },
   },
@@ -54,18 +62,25 @@ const authSlice = createSlice({
       })
       .addCase(
         loginWithPassword.fulfilled,
-        (state, action: PayloadAction<AuthApiResponse>) => {
+        (state, action: PayloadAction<AuthResult>) => {
           state.loading = false;
-          state.code = action.payload.code;
-          state.message = action.payload.message;
-          state.user = action.payload.data;
-          state.accessToken = action.payload.access_token;
+          state.user = action.payload.user;
+          state.accessToken = action.payload.accessToken;
         },
       )
       .addCase(loginWithPassword.rejected, (state, action) => {
         state.loading = false;
+        state.user = null;
+        state.accessToken = "";
         state.error = action.error.message || "Gagal melakukan login";
-      });
+      })
+      .addCase(
+        restoreSession.fulfilled,
+        (state, action: PayloadAction<AuthResult>) => {
+          state.user = action.payload.user;
+          state.accessToken = action.payload.accessToken;
+        },
+      );
   },
 });
 

@@ -1,17 +1,13 @@
-import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { RootState } from "@/redux/store";
-import { Account } from "@/lib/types/accountType";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { Account, CreateAccountInput } from "@/lib/types/accountType";
 import {
   getAccountListApi,
   storeAccountApi,
-  updateAccountApi,
-  deleteAccountApi,
+  type AccountListParams,
 } from "@/lib/api/accountApi";
 
 interface AccountState {
   accounts: Account[];
-  code: number;
-  message: string | null;
   totalData: number;
   loading: boolean;
   error: string | null;
@@ -19,62 +15,30 @@ interface AccountState {
 
 const initialState: AccountState = {
   accounts: [],
-  code: 0,
-  message: null,
   totalData: 0,
   loading: false,
   error: null,
 };
 
-export const getAccountList = createAsyncThunk<
-  {
-    code: number;
-    message: string;
-    data: Account[];
-    pagination: { total_items: number };
-  },
-  { search: string; page: number; limit: number },
-  { state: RootState }
->("account/getAccountList", async ({ search, page, limit }, { getState }) => {
-  const { accessToken } = getState().auth;
-  return getAccountListApi(accessToken, search, page, limit);
-});
+// Gagal request = thunk rejected dengan pesan dari error.message backend.
+export const getAccountList = createAsyncThunk(
+  "account/getAccountList",
+  (params: AccountListParams) => getAccountListApi(params),
+);
 
-export const storeAccount = createAsyncThunk<
-  { code: number; message: string; data: Account },
-  FormData,
-  { state: RootState }
->("account/storeAccount", async (formData, { getState }) => {
-  const { accessToken } = getState().auth;
-  return storeAccountApi(formData, accessToken);
-});
+export const storeAccount = createAsyncThunk(
+  "account/storeAccount",
+  (input: CreateAccountInput) => storeAccountApi(input),
+);
 
-export const updateAccount = createAsyncThunk<
-  { code: number; message: string; data: Account },
-  { id: string; formData: FormData },
-  { state: RootState }
->("account/updateAccount", async ({ id, formData }, { getState }) => {
-  const { accessToken } = getState().auth;
-  return updateAccountApi(id, formData, accessToken);
-});
-
-export const deleteAccount = createAsyncThunk<
-  { code: number; message: string; id: string },
-  string,
-  { state: RootState }
->("account/deleteAccount", async (id, { getState }) => {
-  const { accessToken } = getState().auth;
-  const response = await deleteAccountApi(id, accessToken);
-  return { ...response, id };
-});
+// Backend hanya menyediakan GET & POST /headmasters (tanpa PATCH/DELETE),
+// jadi tidak ada thunk edit/hapus akun.
 
 const accountSlice = createSlice({
   name: "account",
   initialState,
   reducers: {
     clearAccountMessage: (state) => {
-      state.code = 0;
-      state.message = null;
       state.error = null;
     },
   },
@@ -86,7 +50,7 @@ const accountSlice = createSlice({
       .addCase(getAccountList.fulfilled, (state, action) => {
         state.loading = false;
         state.accounts = action.payload.data ?? [];
-        state.totalData = action.payload.pagination?.total_items ?? 0;
+        state.totalData = action.payload.meta?.total ?? state.accounts.length;
       })
       .addCase(getAccountList.rejected, (state, action) => {
         state.loading = false;
@@ -94,63 +58,14 @@ const accountSlice = createSlice({
       })
       .addCase(storeAccount.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
-      .addCase(
-        storeAccount.fulfilled,
-        (
-          state,
-          action: PayloadAction<{
-            code: number;
-            message: string;
-            data: Account;
-          }>,
-        ) => {
-          state.loading = false;
-          state.code = action.payload.code;
-          state.message = action.payload.message;
-          if (action.payload.code === 201)
-            state.accounts.unshift(action.payload.data);
-        },
-      )
+      .addCase(storeAccount.fulfilled, (state) => {
+        state.loading = false;
+      })
       .addCase(storeAccount.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Gagal menambahkan akun.";
-      })
-      .addCase(
-        updateAccount.fulfilled,
-        (
-          state,
-          action: PayloadAction<{
-            code: number;
-            message: string;
-            data: Account;
-          }>,
-        ) => {
-          state.code = action.payload.code;
-          state.message = action.payload.message;
-          const index = state.accounts.findIndex(
-            (item) => item.id === action.payload.data.id,
-          );
-          if (index !== -1) state.accounts[index] = action.payload.data;
-        },
-      )
-      .addCase(updateAccount.rejected, (state, action) => {
-        state.error = action.error.message || "Gagal memperbarui akun.";
-      })
-      .addCase(deleteAccount.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(deleteAccount.fulfilled, (state, action) => {
-        state.loading = false;
-        state.code = action.payload.code;
-        state.message = action.payload.message;
-        state.accounts = state.accounts.filter(
-          (item) => item.id !== action.payload.id,
-        );
-      })
-      .addCase(deleteAccount.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || "Gagal menghapus akun.";
       });
   },
 });

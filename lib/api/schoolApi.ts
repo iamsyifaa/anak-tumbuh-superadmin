@@ -1,104 +1,93 @@
 import { envConfig } from "@/lib/config/envConfig";
-import { EducationLevel } from "@/lib/types/schoolType";
-import {
-  mockGetSchoolList,
-  mockStoreSchool,
-  mockUpdateSchool,
-  mockDeleteSchool,
-} from "./mockData";
+import { apiRequest, apiRequestAll, type ApiResult } from "@/lib/api/client";
+import { asRec, pick, toNum, toStr, type Rec } from "@/lib/api/mappers";
+import type { CreateSchoolInput, School } from "@/lib/types/schoolType";
+import { mockGetSchoolList, mockStoreSchool, unwrapMock } from "./mockData";
 
-const authHeaders = (token: string) => ({
-  Accept: "application/json",
-  Authorization: `Bearer ${token}`,
+// Endpoint backend: GET/POST /schools dan GET /schools/{id} (khusus super
+// admin). Tidak ada PATCH/DELETE sekolah, jadi edit & hapus tidak tersedia.
+const ENDPOINT = "/schools";
+
+export interface ListParams {
+  search: string;
+  page: number;
+  perPage: number;
+}
+
+const mapSchool = (
+  raw: Rec,
+  headmaster?: { id: string; name: string },
+): School => ({
+  id: toStr(raw.id),
+  name: toStr(raw.name),
+  address: toStr(raw.address) || undefined,
+  headmasterName: headmaster?.name,
+  headmasterAccountId: headmaster?.id,
+  totalTeachers: toNum(pick(raw, "teachers_count")),
+  totalStudents: toNum(pick(raw, "students_count")),
+  createdAt: toStr(raw.created_at),
 });
 
-export const getSchoolListApi = async (
-  token: string,
-  search: string,
-  page: number,
-  limit: number,
-) => {
-  if (envConfig.useMockApi) return mockGetSchoolList(search);
+// Backend belum mendukung pencarian dan resource sekolah tidak memuat kepala
+// sekolah. Jadi: ambil semua sekolah + semua kepala sekolah, gabungkan
+// (kepala sekolah berstatus active), cari dan paginasi di frontend.
+export const getSchoolListApi = async ({
+  search,
+  page,
+  perPage,
+}: ListParams): Promise<ApiResult<School[]>> => {
+  if (envConfig.useMockApi) return unwrapMock(await mockGetSchoolList(search));
 
-  const params = new URLSearchParams({
-    search,
-    page: String(page),
-    limit: String(limit),
+  const [schoolRows, headmasterRows] = await Promise.all([
+    apiRequestAll(ENDPOINT),
+    apiRequestAll("/headmasters").catch(() => [] as unknown[]),
+  ]);
+
+  const activeHeadmasterBySchool = new Map<
+    string,
+    { id: string; name: string }
+  >();
+  headmasterRows.map(asRec).forEach((row) => {
+    if (toStr(row.status) !== "active") return;
+    activeHeadmasterBySchool.set(toStr(row.school_id), {
+      id: toStr(row.id),
+      name: toStr(row.name),
+    });
   });
-  const response = await fetch(
-    `${envConfig.apiBaseUrl}/v1/schools?${params.toString()}`,
-    {
-      headers: authHeaders(token),
+
+  const keyword = search.trim().toLowerCase();
+  const all = schoolRows
+    .map(asRec)
+    .map((row) => mapSchool(row, activeHeadmasterBySchool.get(toStr(row.id))))
+    .filter(
+      (school) => !keyword || school.name.toLowerCase().includes(keyword),
+    );
+
+  const size = Math.max(1, perPage);
+  const start = (Math.max(1, page) - 1) * size;
+  return {
+    data: all.slice(start, start + size),
+    meta: {
+      page,
+      per_page: size,
+      total: all.length,
+      total_pages: Math.max(1, Math.ceil(all.length / size)),
     },
-  );
-  return response.json();
+  };
 };
 
-export const storeSchoolApi = async (formData: FormData, token: string) => {
+export const storeSchoolApi = async (
+  input: CreateSchoolInput,
+): Promise<ApiResult<School>> => {
   if (envConfig.useMockApi) {
-    const headmasterAccountId = formData.get("headmaster_account_id");
-    return mockStoreSchool(
-      String(formData.get("name")),
-      formData.get("level") as EducationLevel,
-      String(formData.get("address")),
-      headmasterAccountId ? String(headmasterAccountId) : undefined,
+    return unwrapMock(
+      await mockStoreSchool(input.name, "SD", input.address ?? "", undefined),
     );
   }
 
-  const response = await fetch(`${envConfig.apiBaseUrl}/v1/schools`, {
+  const { data } = await apiRequest<unknown>(ENDPOINT, {
     method: "POST",
-    headers: authHeaders(token),
-    body: formData,
+    body: { name: input.name, address: input.address || undefined },
   });
-  return parseSchoolResponse(response);
-};
-
-export const updateSchoolApi = async (
-  id: string,
-  formData: FormData,
-  token: string,
-) => {
-  if (envConfig.useMockApi) {
-    const headmasterAccountId = formData.get("headmaster_account_id");
-    return mockUpdateSchool(
-      id,
-      headmasterAccountId ? String(headmasterAccountId) : undefined,
-    );
-  }
-
-  formData.append("_method", "PUT");
-  const response = await fetch(`${envConfig.apiBaseUrl}/v1/schools/${id}`, {
-    method: "POST",
-    headers: authHeaders(token),
-    body: formData,
-  });
-  return parseSchoolResponse(response);
-};
-
-export const deleteSchoolApi = async (id: string, token: string) => {
-  if (envConfig.useMockApi) return mockDeleteSchool(id);
-
-  const response = await fetch(`${envConfig.apiBaseUrl}/v1/schools/${id}`, {
-    method: "DELETE",
-    headers: authHeaders(token),
-  });
-  return parseSchoolResponse(response);
-};
-
-// Backend kadang balikin body non-JSON kalau error (mis. 404/500 dari
-// proxy, atau apiBaseUrl belum di-set jadi nyasar ke halaman Next.js
-// sendiri). Tanpa ini, response.json() bakal throw error parsing yang
-// bikin bingung ("Unexpected token '<'...") dan gagal simpan jadi
-// kelihatan seperti tidak terjadi apa-apa.
-const parseSchoolResponse = async (response: Response) => {
-  const raw = await response.text();
-  try {
-    return JSON.parse(raw);
-  } catch {
-    throw new Error(
-      response.ok
-        ? "Server memberi respons yang tidak valid."
-        : `Gagal menghubungi server (status ${response.status}). Pastikan NEXT_PUBLIC_API_BASE_URL sudah benar.`,
-    );
-  }
+  return { data: mapSchool(asRec(data)) };
 };

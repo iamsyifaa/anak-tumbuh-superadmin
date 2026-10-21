@@ -1,17 +1,13 @@
-import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { RootState } from "@/redux/store";
-import { School } from "@/lib/types/schoolType";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { School, CreateSchoolInput } from "@/lib/types/schoolType";
 import {
   getSchoolListApi,
   storeSchoolApi,
-  updateSchoolApi,
-  deleteSchoolApi,
+  type ListParams,
 } from "@/lib/api/schoolApi";
 
 interface SchoolState {
   schools: School[];
-  code: number;
-  message: string | null;
   totalData: number;
   loading: boolean;
   error: string | null;
@@ -19,62 +15,30 @@ interface SchoolState {
 
 const initialState: SchoolState = {
   schools: [],
-  code: 0,
-  message: null,
   totalData: 0,
   loading: false,
   error: null,
 };
 
-export const getSchoolList = createAsyncThunk<
-  {
-    code: number;
-    message: string;
-    data: School[];
-    pagination: { total_items: number };
-  },
-  { search: string; page: number; limit: number },
-  { state: RootState }
->("school/getSchoolList", async ({ search, page, limit }, { getState }) => {
-  const { accessToken } = getState().auth;
-  return getSchoolListApi(accessToken, search, page, limit);
-});
+// Gagal request = thunk rejected dengan pesan dari error.message backend.
+export const getSchoolList = createAsyncThunk(
+  "school/getSchoolList",
+  (params: ListParams) => getSchoolListApi(params),
+);
 
-export const storeSchool = createAsyncThunk<
-  { code: number; message: string; data: School },
-  FormData,
-  { state: RootState }
->("school/storeSchool", async (formData, { getState }) => {
-  const { accessToken } = getState().auth;
-  return storeSchoolApi(formData, accessToken);
-});
+export const storeSchool = createAsyncThunk(
+  "school/storeSchool",
+  (input: CreateSchoolInput) => storeSchoolApi(input),
+);
 
-export const updateSchool = createAsyncThunk<
-  { code: number; message: string; data: School },
-  { id: string; formData: FormData },
-  { state: RootState }
->("school/updateSchool", async ({ id, formData }, { getState }) => {
-  const { accessToken } = getState().auth;
-  return updateSchoolApi(id, formData, accessToken);
-});
-
-export const deleteSchool = createAsyncThunk<
-  { code: number; message: string; id: string },
-  string,
-  { state: RootState }
->("school/deleteSchool", async (id, { getState }) => {
-  const { accessToken } = getState().auth;
-  const response = await deleteSchoolApi(id, accessToken);
-  return { ...response, id };
-});
+// Backend hanya menyediakan GET & POST /schools (tanpa PATCH/DELETE),
+// jadi tidak ada thunk edit/hapus sekolah.
 
 const schoolSlice = createSlice({
   name: "school",
   initialState,
   reducers: {
     clearSchoolMessage: (state) => {
-      state.code = 0;
-      state.message = null;
       state.error = null;
     },
   },
@@ -86,7 +50,7 @@ const schoolSlice = createSlice({
       .addCase(getSchoolList.fulfilled, (state, action) => {
         state.loading = false;
         state.schools = action.payload.data ?? [];
-        state.totalData = action.payload.pagination?.total_items ?? 0;
+        state.totalData = action.payload.meta?.total ?? state.schools.length;
       })
       .addCase(getSchoolList.rejected, (state, action) => {
         state.loading = false;
@@ -94,63 +58,16 @@ const schoolSlice = createSlice({
       })
       .addCase(storeSchool.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
-      .addCase(
-        storeSchool.fulfilled,
-        (
-          state,
-          action: PayloadAction<{
-            code: number;
-            message: string;
-            data: School;
-          }>,
-        ) => {
-          state.loading = false;
-          state.code = action.payload.code;
-          state.message = action.payload.message;
-          if (action.payload.code === 201)
-            state.schools.unshift(action.payload.data);
-        },
-      )
+      .addCase(storeSchool.fulfilled, (state) => {
+        // Daftar dimuat ulang oleh tabel (refresh) supaya urutan & halaman
+        // mengikuti server.
+        state.loading = false;
+      })
       .addCase(storeSchool.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Gagal menambahkan sekolah.";
-      })
-      .addCase(
-        updateSchool.fulfilled,
-        (
-          state,
-          action: PayloadAction<{
-            code: number;
-            message: string;
-            data: School;
-          }>,
-        ) => {
-          state.code = action.payload.code;
-          state.message = action.payload.message;
-          const index = state.schools.findIndex(
-            (item) => item.id === action.payload.data.id,
-          );
-          if (index !== -1) state.schools[index] = action.payload.data;
-        },
-      )
-      .addCase(updateSchool.rejected, (state, action) => {
-        state.error = action.error.message || "Gagal memperbarui sekolah.";
-      })
-      .addCase(deleteSchool.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(deleteSchool.fulfilled, (state, action) => {
-        state.loading = false;
-        state.code = action.payload.code;
-        state.message = action.payload.message;
-        state.schools = state.schools.filter(
-          (item) => item.id !== action.payload.id,
-        );
-      })
-      .addCase(deleteSchool.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || "Gagal menghapus sekolah.";
       });
   },
 });

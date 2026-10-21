@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/redux/store";
+import { getAccessToken } from "@/lib/api/client";
+import { envConfig } from "@/lib/config/envConfig";
+import { restoreSession } from "@/redux/features/auth/authSlice";
 import { isSuperAdmin } from "@/lib/utils/roleGuard";
 import MainNavbar from "@/components/common/Navbar/MainNavbar";
 import MainSidebar from "@/components/common/Sidebar/MainSidebar";
@@ -25,14 +28,31 @@ interface Props {
 // mobile — keduanya pakai satu state logout modal yang sama.
 function DashboardLayout({ children, pageName }: Props) {
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
   const { user, accessToken } = useSelector((state: RootState) => state.auth);
   const [openLogout, setOpenLogout] = useState(false);
+  // Setelah refresh, Redux kosong tapi token masih ada di localStorage:
+  // pulihkan user lewat GET /auth/me sebelum memutuskan harus login ulang.
+  // Selama user belum ada, spinner "Memeriksa sesi..." tetap tampil.
+  useEffect(() => {
+    if (accessToken && user) return;
+    if (envConfig.useMockApi || !getAccessToken()) {
+      router.replace("/");
+      return;
+    }
+    let cancelled = false;
+    dispatch(restoreSession()).then((result) => {
+      if (!cancelled && restoreSession.rejected.match(result))
+        router.replace("/");
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, user, dispatch, router]);
 
   useEffect(() => {
-    if (!accessToken || !user || !isSuperAdmin(user.role)) {
-      router.replace("/");
-    }
-  }, [accessToken, user, router]);
+    if (user && !isSuperAdmin(user.role)) router.replace("/");
+  }, [user, router]);
 
   if (!accessToken || !user || !isSuperAdmin(user.role)) {
     return <SpinLoader label="Memeriksa sesi..." />;

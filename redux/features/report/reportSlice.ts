@@ -1,5 +1,4 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { RootState } from "@/redux/store";
 import { PlatformSummary, SchoolRecapRow } from "@/lib/types/reportType";
 import { getPlatformSummaryApi, getSchoolRecapApi } from "@/lib/api/reportApi";
 
@@ -17,23 +16,16 @@ const initialState: ReportState = {
   error: null,
 };
 
-export const getPlatformSummary = createAsyncThunk<
-  { code: number; message: string; data: PlatformSummary },
-  void,
-  { state: RootState }
->("report/getPlatformSummary", async (_, { getState }) => {
-  const { accessToken } = getState().auth;
-  return getPlatformSummaryApi(accessToken);
-});
+export const getPlatformSummary = createAsyncThunk(
+  "report/getPlatformSummary",
+  () => getPlatformSummaryApi(),
+);
 
-export const getSchoolRecap = createAsyncThunk<
-  { code: number; message: string; data: SchoolRecapRow[] },
-  { startDate: string; endDate: string },
-  { state: RootState }
->("report/getSchoolRecap", async ({ startDate, endDate }, { getState }) => {
-  const { accessToken } = getState().auth;
-  return getSchoolRecapApi(accessToken, startDate, endDate);
-});
+export const getSchoolRecap = createAsyncThunk(
+  "report/getSchoolRecap",
+  ({ startDate, endDate }: { startDate: string; endDate: string }) =>
+    getSchoolRecapApi(startDate, endDate),
+);
 
 const reportSlice = createSlice({
   name: "report",
@@ -46,7 +38,7 @@ const reportSlice = createSlice({
       })
       .addCase(getPlatformSummary.fulfilled, (state, action) => {
         state.loading = false;
-        state.summary = action.payload.data;
+        state.summary = action.payload;
       })
       .addCase(getPlatformSummary.rejected, (state, action) => {
         state.loading = false;
@@ -58,7 +50,7 @@ const reportSlice = createSlice({
       })
       .addCase(getSchoolRecap.fulfilled, (state, action) => {
         state.loading = false;
-        state.schoolRecap = action.payload.data ?? [];
+        state.schoolRecap = action.payload ?? [];
       })
       .addCase(getSchoolRecap.rejected, (state, action) => {
         state.loading = false;

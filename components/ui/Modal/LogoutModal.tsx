@@ -1,22 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
+import { clearAccessToken } from "@/lib/api/client";
 import { resetAuth } from "@/redux/features/auth/authSlice";
 import PrimaryButton from "@/components/ui/Button/PrimaryButton";
 
 function LogoutModal({ onClose }: { onClose: () => void }) {
   const dispatch = useDispatch<AppDispatch>();
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const handleSignout = () => {
     setLoading(true);
-    localStorage.removeItem("access_token");
+    clearAccessToken();
     dispatch(resetAuth());
-    router.replace("/");
+    // Navigasi penuh supaya seluruh state Redux (daftar sekolah/akun) ikut bersih.
+    window.location.replace("/");
   };
 
   return (

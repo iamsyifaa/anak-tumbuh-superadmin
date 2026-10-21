@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { saveAccessToken } from "@/lib/api/client";
 import { AuthenticatedUser } from "@/lib/types/authType";
 import { isSuperAdmin } from "@/lib/utils/roleGuard";
 
@@ -21,7 +22,7 @@ export function useRedirectAfterLogin() {
         return { allowed: false };
       }
 
-      localStorage.setItem("access_token", accessToken);
+      saveAccessToken(accessToken);
       router.push("/dashboard");
       return { allowed: true };
     },

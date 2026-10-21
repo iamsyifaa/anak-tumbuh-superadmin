@@ -4,52 +4,32 @@ import { useEffect, useState } from "react";
 import DataTable from "react-data-table-component";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
-import {
-  getAccountList,
-  deleteAccount,
-} from "@/redux/features/account/accountSlice";
+import { getAccountList } from "@/redux/features/account/accountSlice";
 import { Account } from "@/lib/types/accountType";
 import { useDebounce } from "@/hook/useDebounce";
 import MainCard from "@/components/ui/Card/MainCard";
 import CreateModal from "@/components/ui/Modal/CreateModal";
-import EditModal from "@/components/ui/Modal/EditModal";
 import SuccessModal from "@/components/ui/Modal/SuccessModal";
-import DeleteModal from "@/components/ui/Modal/DeleteModal";
 import TableToolbar from "@/components/common/DataTable/TableToolbar";
-import TableEditButton from "@/components/common/DataTable/TableEditButton";
-import TableDeleteButton from "@/components/common/DataTable/TableDeleteButton";
 import CreateAccountForm from "./CreateAccountForm";
-import EditAccountForm from "./EditAccountForm";
 
 function AccountDataTable() {
   const dispatch = useDispatch<AppDispatch>();
-  const { accounts, loading } = useSelector(
+  const { accounts, loading, totalData } = useSelector(
     (state: RootState) => state.account,
   );
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search);
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
   const [modal, setModal] = useState<"create" | "success" | null>(null);
-  const [editingAccount, setEditingAccount] = useState<Account | null>(null);
-  const [deletingAccount, setDeletingAccount] = useState<Account | null>(null);
-  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    dispatch(getAccountList({ search: debouncedSearch, page: 1, limit: 10 }));
-  }, [dispatch, debouncedSearch]);
+    dispatch(getAccountList({ search: debouncedSearch, page, perPage }));
+  }, [dispatch, debouncedSearch, page, perPage]);
 
   const refresh = () =>
-    dispatch(getAccountList({ search: debouncedSearch, page: 1, limit: 10 }));
-
-  const handleConfirmDelete = async () => {
-    if (!deletingAccount) return;
-    setDeleting(true);
-    const result = await dispatch(deleteAccount(deletingAccount.id));
-    setDeleting(false);
-    if (deleteAccount.fulfilled.match(result)) {
-      setDeletingAccount(null);
-      refresh();
-    }
-  };
+    dispatch(getAccountList({ search: debouncedSearch, page, perPage }));
 
   const columns = [
     {
@@ -65,18 +45,16 @@ function AccountDataTable() {
     {
       name: "Sekolah",
       cell: (row: Account) =>
-        row.schoolName ?? (
-          <span className="italic text-slate-400">Belum ditugaskan</span>
-        ),
+        row.schoolName ?? <span className="italic text-slate-400">-</span>,
     },
     {
-      name: "Aksi",
-      cell: (row: Account) => (
-        <div className="flex items-center gap-3">
-          <TableEditButton onClick={() => setEditingAccount(row)} />
-          <TableDeleteButton onClick={() => setDeletingAccount(row)} />
-        </div>
-      ),
+      name: "Status",
+      cell: (row: Account) =>
+        row.status === "inactive" ? (
+          <span className="text-slate-400">Nonaktif</span>
+        ) : (
+          <span className="font-semibold text-emerald-600">Aktif</span>
+        ),
     },
   ];
 
@@ -84,8 +62,11 @@ function AccountDataTable() {
     <MainCard>
       <TableToolbar
         searchValue={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Cari nama/username..."
+        onSearchChange={(value) => {
+          setSearch(value);
+          setPage(1);
+        }}
+        searchPlaceholder="Cari nama/NIP..."
         actionLabel="Tambah Akun"
         onAction={() => setModal("create")}
       />
@@ -95,6 +76,15 @@ function AccountDataTable() {
         data={accounts}
         progressPending={loading}
         pagination
+        paginationServer
+        paginationTotalRows={totalData}
+        paginationPerPage={perPage}
+        paginationDefaultPage={page}
+        onChangePage={setPage}
+        onChangeRowsPerPage={(newPerPage, newPage) => {
+          setPerPage(newPerPage);
+          setPage(newPage);
+        }}
       />
 
       {modal === "create" && (
@@ -112,28 +102,6 @@ function AccountDataTable() {
         <SuccessModal
           description="Akun berhasil disimpan."
           onClose={() => setModal(null)}
-        />
-      )}
-
-      {editingAccount && (
-        <EditModal title="Edit Akun" onClose={() => setEditingAccount(null)}>
-          <EditAccountForm
-            account={editingAccount}
-            onSuccess={() => {
-              setEditingAccount(null);
-              refresh();
-            }}
-          />
-        </EditModal>
-      )}
-
-      {deletingAccount && (
-        <DeleteModal
-          title="Hapus akun ini?"
-          description={`Akun "${deletingAccount.name}" akan dihapus permanen dan gak bisa dibatalkan.`}
-          loading={deleting}
-          onClose={() => setDeletingAccount(null)}
-          onConfirm={handleConfirmDelete}
         />
       )}
     </MainCard>

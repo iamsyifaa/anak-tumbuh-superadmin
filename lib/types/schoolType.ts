@@ -1,13 +1,16 @@
 // Requirement doc bagian 2: hanya Super Admin yang bisa bikin sekolah baru.
+// Backend (POST /schools) hanya menyimpan nama & alamat; jenjang (TK/SD) dan
+// penugasan kepala sekolah tidak ada di backend.
 export type EducationLevel = "TK" | "SD";
 
 export interface School {
   id: string;
   name: string;
-  level: EducationLevel;
+  // Hanya terisi di mode dummy; backend tidak punya field jenjang.
+  level?: EducationLevel;
   address?: string;
+  // Kepala sekolah AKTIF sekolah ini (digabung dari GET /headmasters).
   headmasterName?: string;
-  // id akun Kepala Sekolah yang ditugaskan ke sekolah ini (kalau sudah ada).
   headmasterAccountId?: string;
   totalTeachers: number;
   totalStudents: number;
@@ -16,10 +19,5 @@ export interface School {
 
 export interface CreateSchoolInput {
   name: string;
-  level: EducationLevel;
   address?: string;
-  // Opsional: id akun Kepala Sekolah yang belum ditugaskan ke sekolah manapun.
-  headmasterAccountId?: string;
 }
-
-export type UpdateSchoolInput = Partial<CreateSchoolInput>;

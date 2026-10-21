@@ -314,3 +314,19 @@ export async function mockGetSchoolRecap() {
   await delay();
   return { code: 200, message: "OK (mode dummy)", data: MOCK_SCHOOL_RECAP };
 }
+
+// Mengubah bentuk lama mock ({code, message, data, pagination}) ke bentuk
+// envelope API asli ({data, meta}) supaya slice/komponen cukup satu cara baca.
+export function unwrapMock<T>(result: {
+  code: number;
+  message: string;
+  data?: T;
+  pagination?: { total_items: number };
+}): { data: T; meta?: { total: number } } {
+  return {
+    data: result.data as T,
+    meta: result.pagination
+      ? { total: result.pagination.total_items }
+      : undefined,
+  };
+}
